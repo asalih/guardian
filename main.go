@@ -6,22 +6,20 @@ package main
 
 import (
 	"context"
-	"crypto/rsa"
 	"crypto/tls"
-	"crypto/x509"
-	"encoding/pem"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
-	"os"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
 
 var addr = flag.String("addr", ":443", "http service address")
+var db = &DBHelper{}
 
 var dialer = &net.Dialer{
 	Timeout:   30 * time.Second,
@@ -41,8 +39,16 @@ func (h guardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.DefaultTransport.(*http.Transport).DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-		if addr == "www.netsparker.com:443" {
-			addr = "52.1.25.52:443"
+
+		uri, ferr := url.Parse(addr)
+		if ferr != nil {
+			panic(ferr)
+		}
+
+		target := db.GetTarget(uri.Scheme)
+
+		if target != nil {
+			addr = target.OriginIPAddress + ":" + strconv.Itoa(target.Port)
 		}
 
 		return dialer.DialContext(ctx, network, addr)
@@ -79,69 +85,70 @@ func getCertificate(arg interface{}) func(clientHello *tls.ClientHelloInfo) (*tl
 		if err != nil {
 			return nil, err
 		}
-		cert, _ := loadCertificates("ns.key", "ns.crt")
 
+		target := db.GetTarget(clientHello.ServerName)
+
+		if target == nil {
+			return nil, err
+		}
+
+		cert, err := loadCertificates(target)
+
+		if err != nil {
+			panic(err)
+		}
 		return &cert, nil
 	}
 }
 
-func loadCertificates(certFile, keyFile string) (tls.Certificate, error) {
-	certPEMBlock, err := ioutil.ReadFile(certFile)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-	keyPEMBlock, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-	return tls.X509KeyPair(certPEMBlock, keyPEMBlock)
-}
+// func loadCertificates(certFile, keyFile string) (tls.Certificate, error) {
+// 	certPEMBlock, err := ioutil.ReadFile(certFile)
+// 	fmt.Println(string(certPEMBlock))
+// 	if err != nil {
+// 		return tls.Certificate{}, err
+// 	}
+// 	keyPEMBlock, err := ioutil.ReadFile(keyFile)
+// 	fmt.Println(string(keyPEMBlock))
+// 	if err != nil {
+// 		return tls.Certificate{}, err
+// 	}
+// 	return tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+// }
 
-func loadX509KeyPair(certFile, keyFile string) (*x509.Certificate, *rsa.PrivateKey) {
-	cf, e := ioutil.ReadFile(certFile)
-	if e != nil {
-		fmt.Println("cfload:", e.Error())
-		os.Exit(1)
-	}
-
-	kf, e := ioutil.ReadFile(keyFile)
-	if e != nil {
-		fmt.Println("kfload:", e.Error())
-		os.Exit(1)
-	}
-	cpb, cr := pem.Decode(cf)
-	fmt.Println(string(cr))
-	kpb, kr := pem.Decode(kf)
-	fmt.Println(string(kr))
-	crt, e := x509.ParseCertificate(cpb.Bytes)
-
-	if e != nil {
-		fmt.Println("parsex509:", e.Error())
-		os.Exit(1)
-	}
-	key, e := x509.ParsePKCS1PrivateKey(kpb.Bytes)
-	if e != nil {
-		fmt.Println("parsekey:", e.Error())
-		os.Exit(1)
-	}
-	return crt, key
+func loadCertificates(target *Target) (tls.Certificate, error) {
+	return tls.X509KeyPair([]byte(target.CertCrt), []byte(target.CertKey))
 }
 
 func main() {
 	flag.Parse()
-	// certPEMBlock, _ := ioutil.ReadFile("Goo.pfx")
-	//http.Ser(guardian)
-
-	// if certPEMBlock != nil {
-	// 	log.Fatal(certPEMBlock)
-	// }
 
 	srv := &http.Server{
 		Handler: &guardianHandler{},
 		Addr:    ":443",
 		TLSConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: false,
 			GetCertificate:     getCertificate("netsparker.com"),
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_RC4_128_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
+				tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_RSA_WITH_RC4_128_SHA,
+				tls.TLS_RSA_WITH_AES_128_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+				tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+			},
+			MinVersion:               tls.VersionTLS12,
+			PreferServerCipherSuites: true,
 		},
 	}
 
