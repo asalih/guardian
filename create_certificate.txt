@@ -1,0 +1,14 @@
+openssl req \
+-newkey rsa:2048 \
+-x509 \
+-nodes \
+-keyout ns.key \
+-new \
+-out ns.crt \
+-subj /CN=www.netsparker.com \
+-reqexts SAN \
+-extensions SAN \
+-config <(cat /etc/ssl/openssl.cnf \
+    <(printf '[SAN]\nsubjectAltName=DNS:www.netsparker.com,IP:192.168.1.26')) \
+-sha256 \
+-days 3650
