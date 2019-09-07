@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -54,7 +50,14 @@ func (h guardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return dialer.DialContext(ctx, network, addr)
 	}
 
-	resp, _ := http.Get("https://" + r.Host)
+	uriToReq := "https://" + r.Host
+
+	if r.RequestURI != "" {
+		uriToReq = uriToReq + r.RequestURI
+	}
+
+	resp, _ := http.Get(uriToReq)
+
 	defer resp.Body.Close()
 
 	for name, values := range resp.Header {
@@ -64,23 +67,15 @@ func (h guardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(resp.StatusCode)
 
 	io.Copy(w, resp.Body)
-
-	//fmt.Fprintf(w, "hello, you've hit %s\n", r.URL.Path)
 }
 
 func lookRequest(r *http.Request) bool {
 	return strings.Contains(r.URL.RawQuery, "%3Cscript%3E")
 }
 
-func getCertificate(arg interface{}) func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+func getCertificate() func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	var err error
-	// if host, ok := arg.(string); ok {
 
-	// } else if o, ok := arg.(Certopts); ok {
-	// 	opts = o
-	// } else {
-	// 	err = errors.New("Invalid arg type, must be string(hostname) or Certopt{...}")
-	// }
 	return func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 		if err != nil {
 			return nil, err
@@ -101,20 +96,6 @@ func getCertificate(arg interface{}) func(clientHello *tls.ClientHelloInfo) (*tl
 	}
 }
 
-// func loadCertificates(certFile, keyFile string) (tls.Certificate, error) {
-// 	certPEMBlock, err := ioutil.ReadFile(certFile)
-// 	fmt.Println(string(certPEMBlock))
-// 	if err != nil {
-// 		return tls.Certificate{}, err
-// 	}
-// 	keyPEMBlock, err := ioutil.ReadFile(keyFile)
-// 	fmt.Println(string(keyPEMBlock))
-// 	if err != nil {
-// 		return tls.Certificate{}, err
-// 	}
-// 	return tls.X509KeyPair(certPEMBlock, keyPEMBlock)
-// }
-
 func loadCertificates(target *Target) (tls.Certificate, error) {
 	return tls.X509KeyPair([]byte(target.CertCrt), []byte(target.CertKey))
 }
@@ -127,7 +108,7 @@ func main() {
 		Addr:    ":443",
 		TLSConfig: &tls.Config{
 			InsecureSkipVerify: false,
-			GetCertificate:     getCertificate("netsparker.com"),
+			GetCertificate:     getCertificate(),
 			CipherSuites: []uint16{
 				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
@@ -153,8 +134,4 @@ func main() {
 	}
 
 	srv.ListenAndServeTLS("", "")
-	//err := http.ListenAndServeTLS(*addr, "", "", guardianHandler{})
-	// if err != nil {
-	// 	log.Fatal("ListenAndServe: ", err)
-	// }
 }
