@@ -16,13 +16,13 @@ var dialer = &net.Dialer{
 	DualStack: true,
 }
 
-//Guardian HTTPS Handler is the transport handler
+/*GuardianHandler Guardian HTTPS Handler is the transport handler*/
 type GuardianHandler struct {
 	DB                 *DBHelper
 	IsHTTPPortListener bool
 }
 
-//Https Guardian handler init
+/*NewGuardianHandler Https Guardian handler init*/
 func NewGuardianHandler(isHTTPPortListener bool) *GuardianHandler {
 	return &GuardianHandler{&DBHelper{}, isHTTPPortListener}
 }
@@ -78,7 +78,11 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		uriToReq += r.RequestURI
 	}
 
-	resp, _ := http.Get(uriToReq)
+	resp, gerr := http.Get(uriToReq)
+
+	if gerr != nil {
+		//Decide what to do in error case
+	}
 
 	defer resp.Body.Close()
 

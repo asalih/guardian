@@ -8,7 +8,7 @@ import (
 
 var connString = "server=localhost\\SQLExpress;database=GuardianDB;user id=sa;password=1q2w3e;port=1433"
 
-//The target
+/*Target The target type*/
 type Target struct {
 	Domain          string
 	OriginIPAddress string
@@ -17,11 +17,11 @@ type Target struct {
 	UseHTTPS        bool
 }
 
-//The database query helper
+/*DBHelper The database query helper*/
 type DBHelper struct {
 }
 
-//Reads the Target
+/*GetTarget Reads the Target from database*/
 func (h *DBHelper) GetTarget(domain string) *Target {
 	conn, err := sql.Open("mssql", connString)
 	defer conn.Close()

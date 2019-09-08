@@ -6,18 +6,18 @@ import (
 	"strings"
 )
 
-//Cheks the requests init
+/*RequestCheck Cheks the requests init*/
 type RequestCheck struct {
 	ResponseWriter http.ResponseWriter
 	Request        *http.Request
 }
 
-//New request checker initializer
+/*NewRequestChecker Request checker initializer*/
 func NewRequestChecker(w http.ResponseWriter, r *http.Request) *RequestCheck {
 	return &RequestCheck{w, r}
 }
 
-//Request checker
+/*Handle Request checker handler func*/
 func (r RequestCheck) Handle() bool {
 
 	notSafeForScript := r.lookRequest()

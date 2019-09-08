@@ -5,12 +5,12 @@ import (
 	"net/http"
 )
 
-//The http server handler
+/*HTTPServer The http server handler*/
 type HTTPServer struct {
 	DB *DBHelper
 }
 
-//HTTP server initializer
+/*NewHTTPServer HTTP server initializer*/
 func NewHTTPServer() *HTTPServer {
 	return &HTTPServer{&DBHelper{}}
 }
@@ -68,7 +68,7 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 			return nil, err
 		}
 
-		cert, err := loadCertificates(target)
+		cert, err := h.loadCertificates(target)
 
 		if err != nil {
 			panic(err)
@@ -77,6 +77,6 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 	}
 }
 
-func loadCertificates(target *Target) (tls.Certificate, error) {
+func (h HTTPServer) loadCertificates(target *Target) (tls.Certificate, error) {
 	return tls.X509KeyPair([]byte(target.CertCrt), []byte(target.CertKey))
 }
