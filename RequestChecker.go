@@ -1,0 +1,36 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"strings"
+)
+
+//Cheks the requests init
+type RequestCheck struct {
+	ResponseWriter http.ResponseWriter
+	Request        *http.Request
+}
+
+//New request checker initializer
+func NewRequestChecker(w http.ResponseWriter, r *http.Request) *RequestCheck {
+	return &RequestCheck{w, r}
+}
+
+//Request checker
+func (r RequestCheck) Handle() bool {
+
+	notSafeForScript := r.lookRequest()
+
+	if notSafeForScript {
+		fmt.Fprintf(r.ResponseWriter, "Not nice. %s", r.Request.URL.Path)
+
+		return false
+	}
+
+	return true
+}
+
+func (r RequestCheck) lookRequest() bool {
+	return strings.Contains(r.Request.URL.RawQuery, "%3Cscript%3E")
+}

@@ -14,7 +14,7 @@ type Target struct {
 	OriginIPAddress string
 	CertKey         string
 	CertCrt         string
-	Port            int
+	UseHTTPS        bool
 }
 
 //The database query helper
@@ -30,10 +30,10 @@ func (h *DBHelper) GetTarget(domain string) *Target {
 		panic(err)
 	}
 
-	row := conn.QueryRow("SELECT Domain, OriginIpAddress, CertCrt, CertKey, Port FROM Targets Where Domain=?;", domain)
+	row := conn.QueryRow("SELECT Domain, OriginIpAddress, CertCrt, CertKey, UseHttps FROM Targets Where Domain=?;", domain)
 
 	var target = &Target{}
-	rerr := row.Scan(&target.Domain, &target.OriginIPAddress, &target.CertCrt, &target.CertKey, &target.Port)
+	rerr := row.Scan(&target.Domain, &target.OriginIPAddress, &target.CertCrt, &target.CertKey, &target.UseHTTPS)
 
 	if rerr != nil {
 		return nil
