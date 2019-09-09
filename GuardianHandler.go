@@ -1,6 +1,7 @@
 package main
 
 import (
+	request "Guardian/Request"
 	"context"
 	"fmt"
 	"io"
@@ -48,9 +49,9 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handleResult := NewRequestChecker(w, r).Handle()
+	requestIsNotSafe := request.NewRequestChecker(w, r).Handle()
 
-	if !handleResult {
+	if requestIsNotSafe {
 		return
 	}
 

@@ -1,0 +1,5 @@
+[
+    {"checkPoint": "Query", "payload": "(?i)<(script|iframe)", "type": "XSS"},
+    {"checkPoint": "Query", "payload": "(?i)(alert|eval|prompt)\\(", "type": "XSS"},
+    {"checkPoint": "Query", "payload": "(?i)(onmouseover|onerror|onload|onclick)\\s*=", "type": "XSS"}
+]
