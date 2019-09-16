@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 )
 
@@ -68,15 +69,17 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 			return nil, err
 		}
 
-		cert, err := h.loadCertificates(target)
+		cert, errl := h.loadCertificates(target)
 
-		if err != nil {
-			panic(err)
+		if errl != nil {
+			panic(errl)
 		}
 		return &cert, nil
 	}
 }
 
 func (h HTTPServer) loadCertificates(target *Target) (tls.Certificate, error) {
+	fmt.Println(target.CertCrt)
+	fmt.Println(target.CertKey)
 	return tls.X509KeyPair([]byte(target.CertCrt), []byte(target.CertKey))
 }

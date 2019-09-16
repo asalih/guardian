@@ -3,10 +3,10 @@ package main
 import (
 	"database/sql"
 
-	_ "github.com/denisenkom/go-mssqldb"
+	_ "github.com/lib/pq"
 )
 
-var connString = "server=localhost\\SQLExpress;database=GuardianDB;user id=sa;password=1q2w3e;port=1433"
+var connString = "host=localhost port=5432 user=postgres password=1q2w3e dbname=GuardianDB sslmode=disable"
 
 /*Target The target type*/
 type Target struct {
@@ -23,17 +23,17 @@ type DBHelper struct {
 
 /*GetTarget Reads the Target from database*/
 func (h *DBHelper) GetTarget(domain string) *Target {
-	conn, err := sql.Open("mssql", connString)
+	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
 	if err != nil {
 		panic(err)
 	}
 
-	row := conn.QueryRow("SELECT Domain, OriginIpAddress, CertCrt, CertKey, UseHttps FROM Targets Where Domain=?;", domain)
+	row := conn.QueryRow("SELECT \"Domain\", \"OriginIpAddress\", \"CertKey\", \"CertCrt\", \"UseHttps\" FROM public.\"Targets\" where \"Domain\"= $1", domain)
 
 	var target = &Target{}
-	rerr := row.Scan(&target.Domain, &target.OriginIPAddress, &target.CertCrt, &target.CertKey, &target.UseHTTPS)
+	rerr := row.Scan(&target.Domain, &target.OriginIPAddress, &target.CertKey, &target.CertCrt, &target.UseHTTPS)
 
 	if rerr != nil {
 		return nil
