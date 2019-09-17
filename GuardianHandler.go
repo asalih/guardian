@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Guardian/request"
 	"context"
 	"fmt"
 	"io"
@@ -8,8 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	request "github.com/Guardian/Request"
 )
 
 var dialer = &net.Dialer{

@@ -1,8 +1,6 @@
 package main
 
-import (
-	models "github.com/Guardian/Models"
-)
+import "Guardian/models"
 
 func main() {
 
