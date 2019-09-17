@@ -1,7 +1,7 @@
 package main
 
 import (
-	models "Guardian/Models"
+	models "github.com/Guardian/Models"
 )
 
 func main() {

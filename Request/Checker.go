@@ -1,7 +1,6 @@
 package request
 
 import (
-	models "Guardian/Models"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -15,6 +14,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	models "github.com/Guardian/Models"
 )
 
 var staticSuffix = []string{".js", ".css", ".png", ".jpg", ".gif", ".bmp", ".svg", ".ico"}
