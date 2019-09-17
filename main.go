@@ -1,6 +1,6 @@
 package main
 
-import "guardian/models"
+import "github.com/asalih/guardian/models"
 
 func main() {
 
