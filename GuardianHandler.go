@@ -93,7 +93,11 @@ func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.R
 	var response *http.Response
 	var err error
 	var req *http.Request
-	client := &http.Client{}
+
+	//timeout is 45 secs for to pass to origin server.
+	client := &http.Client{
+		Timeout: time.Second * 45,
+	}
 
 	req, err = http.NewRequest(incomingRequest.Method, uriToReq, incomingRequest.Body)
 	for name, value := range incomingRequest.Header {
