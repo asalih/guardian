@@ -101,6 +101,7 @@ func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.R
 
 	req, err = http.NewRequest(incomingRequest.Method, uriToReq, incomingRequest.Body)
 	for name, value := range incomingRequest.Header {
+		//TODO: Do not pass the headers except whitelisted
 		req.Header.Set(name, value[0])
 	}
 	response, err = client.Do(req)
