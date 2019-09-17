@@ -1,6 +1,6 @@
 package main
 
-import "Guardian/models"
+import "guardian/models"
 
 func main() {
 
