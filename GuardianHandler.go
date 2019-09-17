@@ -79,19 +79,39 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		uriToReq += r.RequestURI
 	}
 
-	resp, gerr := http.Get(uriToReq)
+	transportResponse := h.transportRequest(uriToReq, w, r)
 
-	if gerr != nil {
-		//Decide what to do in error case
+	if transportResponse == nil {
+		return
 	}
 
-	defer resp.Body.Close()
+	//TODO: Response check
+}
 
-	for name, values := range resp.Header {
-		w.Header()[name] = values
+//TransportRequest Transports the incoming request
+func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.ResponseWriter, incomingRequest *http.Request) *http.Response {
+	var response *http.Response
+	var err error
+	var req *http.Request
+	client := &http.Client{}
+
+	req, err = http.NewRequest(incomingRequest.Method, uriToReq, incomingRequest.Body)
+	for name, value := range incomingRequest.Header {
+		req.Header.Set(name, value[0])
+	}
+	response, err = client.Do(req)
+	defer incomingRequest.Body.Close()
+
+	if err != nil {
+		http.Error(incomingWriter, err.Error(), http.StatusInternalServerError)
+		return nil
 	}
 
-	w.WriteHeader(resp.StatusCode)
+	for k, v := range response.Header {
+		incomingWriter.Header().Set(k, v[0])
+	}
+	incomingWriter.WriteHeader(response.StatusCode)
+	io.Copy(incomingWriter, response.Body)
 
-	io.Copy(w, resp.Body)
+	return response
 }
