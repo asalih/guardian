@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/models"
 )
 
@@ -24,9 +25,11 @@ var staticSuffix = []string{".js", ".css", ".png", ".jpg", ".gif", ".bmp", ".svg
 type Checker struct {
 	ResponseWriter http.ResponseWriter
 	Request        *http.Request
+	Target         *models.Target
 
 	requestTransfer *requestTransfer
 	result          chan *models.MatchResult
+	firewallResult  chan *models.MatchResult
 }
 
 type requestTransfer struct {
@@ -35,21 +38,81 @@ type requestTransfer struct {
 }
 
 /*NewRequestChecker Request checker initializer*/
-func NewRequestChecker(w http.ResponseWriter, r *http.Request) *Checker {
-
-	return &Checker{w, r, nil, nil}
+func NewRequestChecker(w http.ResponseWriter, r *http.Request, target *models.Target) *Checker {
+	return &Checker{w, r, target, nil, nil, nil}
 }
 
 /*Handle Request checker handler func*/
 func (r Checker) Handle() bool {
 
-	if r.Request.Method == "GET" && r.IsStaticResource(r.Request.URL.Path) {
+	if !r.Target.WAFEnabled || r.Request.Method == "GET" && r.IsStaticResource(r.Request.URL.Path) {
 		return false
 	}
 
 	bodyBuffer, _ := ioutil.ReadAll(r.Request.Body)
 	r.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBuffer))
 	r.requestTransfer = &requestTransfer{bodyBuffer, r.Request.Header.Get("Content-Type")}
+
+	result := r.handleWAFChecker()
+
+	if result {
+		return result
+	}
+
+	return r.handleFirewallRuleChecker()
+}
+
+// IsStaticResource ...
+func (r Checker) IsStaticResource(url string) bool {
+	if strings.Contains(url, "?") {
+		return false
+	}
+	for _, suffix := range staticSuffix {
+		if strings.HasSuffix(url, suffix) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r Checker) handleFirewallRuleChecker() bool {
+	firewallChannel := make(chan bool, 1)
+
+	go func() {
+		var wg sync.WaitGroup
+
+		db := &data.DBHelper{}
+
+		firewallRules := db.GetFirewallRules(r.Target.ID)
+		lenOfRules := len(firewallRules)
+
+		r.firewallResult = make(chan *models.MatchResult, lenOfRules)
+
+		wg.Add(lenOfRules)
+
+		for _, rule := range firewallRules {
+			fmt.Println(rule.Expression)
+			wg.Done()
+		}
+
+		wg.Wait()
+
+		close(r.firewallResult)
+
+		firewallChannel <- true
+	}()
+
+	select {
+	case res := <-firewallChannel:
+		fmt.Println(res)
+	case <-time.After(3 * time.Minute):
+		panic("failed to execute rules.")
+	}
+
+	return false
+}
+
+func (r Checker) handleWAFChecker() bool {
 
 	done := make(chan bool, 1)
 
@@ -87,19 +150,6 @@ func (r Checker) Handle() bool {
 		}
 	}
 
-	return false
-}
-
-// IsStaticResource ...
-func (r Checker) IsStaticResource(url string) bool {
-	if strings.Contains(url, "?") {
-		return false
-	}
-	for _, suffix := range staticSuffix {
-		if strings.HasSuffix(url, suffix) {
-			return true
-		}
-	}
 	return false
 }
 

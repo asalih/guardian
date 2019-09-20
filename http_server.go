@@ -3,16 +3,19 @@ package main
 import (
 	"crypto/tls"
 	"net/http"
+
+	"github.com/asalih/guardian/data"
+	"github.com/asalih/guardian/models"
 )
 
 /*HTTPServer The http server handler*/
 type HTTPServer struct {
-	DB *DBHelper
+	DB *data.DBHelper
 }
 
 /*NewHTTPServer HTTP server initializer*/
 func NewHTTPServer() *HTTPServer {
-	return &HTTPServer{&DBHelper{}}
+	return &HTTPServer{&data.DBHelper{}}
 }
 
 func (h HTTPServer) ServeHTTP() {
@@ -77,6 +80,6 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 	}
 }
 
-func (h HTTPServer) loadCertificates(target *Target) (tls.Certificate, error) {
+func (h HTTPServer) loadCertificates(target *models.Target) (tls.Certificate, error) {
 	return tls.X509KeyPair([]byte(target.CertCrt), []byte(target.CertKey))
 }

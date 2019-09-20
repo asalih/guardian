@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/request"
 )
 
@@ -20,13 +21,13 @@ var dialer = &net.Dialer{
 
 /*GuardianHandler Guardian HTTPS Handler is the transport handler*/
 type GuardianHandler struct {
-	DB                 *DBHelper
+	DB                 *data.DBHelper
 	IsHTTPPortListener bool
 }
 
 /*NewGuardianHandler Https Guardian handler init*/
 func NewGuardianHandler(isHTTPPortListener bool) *GuardianHandler {
-	return &GuardianHandler{&DBHelper{}, isHTTPPortListener}
+	return &GuardianHandler{&data.DBHelper{}, isHTTPPortListener}
 }
 
 func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +51,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestIsNotSafe := request.NewRequestChecker(w, r).Handle()
+	requestIsNotSafe := request.NewRequestChecker(w, r, target).Handle()
 
 	if requestIsNotSafe {
 		return
