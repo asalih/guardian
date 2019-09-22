@@ -2,8 +2,11 @@ package data
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/asalih/guardian/models"
+	"github.com/google/uuid"
+
 	//_ ...
 	_ "github.com/lib/pq"
 )
@@ -23,7 +26,7 @@ func (h *DBHelper) GetTarget(domain string) *models.Target {
 		panic(err)
 	}
 
-	row := conn.QueryRow("SELECT \"Id\", \"Domain\", \"OriginIpAddress\", \"CertKey\", \"CertCrt\", \"UseHttps\", \"WAFEnabled\" FROM public.\"Targets\" where \"Domain\"= $1", domain)
+	row := conn.QueryRow("SELECT \"Id\", \"Domain\", \"OriginIpAddress\", \"CertKey\", \"CertCrt\", \"UseHttps\", \"WAFEnabled\" FROM public.\"Targets\" where \"IsVerified\"=true and \"Domain\"= $1", domain)
 
 	var target = &models.Target{}
 	rerr := row.Scan(&target.ID, &target.Domain, &target.OriginIPAddress, &target.CertKey, &target.CertCrt, &target.UseHTTPS, &target.WAFEnabled)
@@ -64,4 +67,42 @@ func (h *DBHelper) GetFirewallRules(targetID string) []*models.FirewallRule {
 	}
 
 	return result
+}
+
+//LogMatchResult ...
+func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *models.Target) {
+	conn, err := sql.Open("postgres", connString)
+	defer conn.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	sqlStatement := `
+INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "Description")
+VALUES ($1, $2, $3, $4, $5, $6, $7)`
+
+	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 0, matchResult.MatchedPayload.Payload)
+	if err != nil {
+		panic(err)
+	}
+}
+
+//LogFirewallMatchResult ...
+func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target) {
+	conn, err := sql.Open("postgres", connString)
+	defer conn.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	sqlStatement := `
+INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "FirewallRuleId")
+VALUES ($1, $2, $3, $4, $5, $6, $7)`
+
+	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 1, matchResult.FirewallRule.ID)
+	if err != nil {
+		panic(err)
+	}
 }

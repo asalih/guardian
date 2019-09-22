@@ -15,6 +15,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/PaesslerAG/gval"
+
 	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/models"
 )
@@ -29,7 +31,8 @@ type Checker struct {
 
 	requestTransfer *requestTransfer
 	result          chan *models.MatchResult
-	firewallResult  chan *models.MatchResult
+	firewallResult  chan *models.FirewallMatchResult
+	time            time.Time
 }
 
 type requestTransfer struct {
@@ -39,7 +42,7 @@ type requestTransfer struct {
 
 /*NewRequestChecker Request checker initializer*/
 func NewRequestChecker(w http.ResponseWriter, r *http.Request, target *models.Target) *Checker {
-	return &Checker{w, r, target, nil, nil, nil}
+	return &Checker{w, r, target, nil, nil, nil, time.Now()}
 }
 
 /*Handle Request checker handler func*/
@@ -77,22 +80,35 @@ func (r Checker) IsStaticResource(url string) bool {
 
 func (r Checker) handleFirewallRuleChecker() bool {
 	firewallChannel := make(chan bool, 1)
+	db := &data.DBHelper{}
 
 	go func() {
 		var wg sync.WaitGroup
 
-		db := &data.DBHelper{}
-
 		firewallRules := db.GetFirewallRules(r.Target.ID)
 		lenOfRules := len(firewallRules)
 
-		r.firewallResult = make(chan *models.MatchResult, lenOfRules)
+		r.firewallResult = make(chan *models.FirewallMatchResult, lenOfRules)
 
 		wg.Add(lenOfRules)
 
+		mapForFwRules := map[string]interface{}{
+			"ip": map[string]interface{}{
+				"src": r.Request.RemoteAddr,
+			},
+			"http": map[string]interface{}{
+				"query":    r.Request.URL.RawQuery,
+				"path":     r.Request.URL.RawPath,
+				"host":     r.Request.URL.Host,
+				"cookie":   models.CookiesToString(r.Request.Cookies()),
+				"header":   models.HeadersToString(r.Request.Header),
+				"method":   r.Request.Method,
+				"protocol": r.Request.Proto,
+			},
+		}
+
 		for _, rule := range firewallRules {
-			fmt.Println(rule.Expression)
-			wg.Done()
+			go r.handleFirewallPayload(rule, mapForFwRules, &wg)
 		}
 
 		wg.Wait()
@@ -107,6 +123,17 @@ func (r Checker) handleFirewallRuleChecker() bool {
 		fmt.Println(res)
 	case <-time.After(3 * time.Minute):
 		panic("failed to execute rules.")
+	}
+
+	for i := range r.firewallResult {
+		if i.IsMatched {
+			r.ResponseWriter.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
+
+			db.LogFirewallMatchResult(i, r.Target)
+
+			return true
+		}
 	}
 
 	return false
@@ -146,6 +173,10 @@ func (r Checker) handleWAFChecker() bool {
 			r.ResponseWriter.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
 
+			db := &data.DBHelper{}
+
+			go db.LogMatchResult(i, r.Target)
+
 			return true
 		}
 	}
@@ -153,10 +184,25 @@ func (r Checker) handleWAFChecker() bool {
 	return false
 }
 
+func (r Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules map[string]interface{}, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	evalResult, everr := gval.Evaluate(rule.Expression, mapForFwRules)
+
+	if everr != nil {
+		fmt.Println(everr)
+	}
+
+	if evalResult.(bool) {
+		r.firewallResult <- models.NewFirewallMatchResult(rule, evalResult.(bool)).Time(r.time)
+	} else {
+		r.firewallResult <- models.NewFirewallMatchResult(nil, false)
+	}
+}
+
 func (r Checker) handlePayload(key string, payloads []models.PayloadData, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	fmt.Println(r.Request.RequestURI)
 	switch key {
 	case "Query":
 		r.result <- r.handleQuery(payloads)
@@ -177,7 +223,7 @@ func (r Checker) handleQuery(payloads []models.PayloadData) *models.MatchResult 
 		isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(r.Request.URL.RawQuery))
 
 		if isMatch {
-			return models.NewMatchResult(&p, true)
+			return models.NewMatchResult(&p, true).Time(r.time)
 		}
 	}
 
@@ -189,7 +235,7 @@ func (r Checker) handlePath(payloads []models.PayloadData) *models.MatchResult {
 		isMatch, _ := models.IsMatch(p.Payload, r.Request.URL.Path)
 
 		if isMatch {
-			return models.NewMatchResult(&p, true)
+			return models.NewMatchResult(&p, true).Time(r.time)
 		}
 	}
 
@@ -211,7 +257,7 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 					for _, p := range uploadCheck {
 						matched, _ := models.IsMatch(p.Payload, fileExtension)
 						if matched == true {
-							return models.NewMatchResult(&p, true)
+							return models.NewMatchResult(&p, true).Time(r.time)
 						}
 					}
 				}
@@ -231,7 +277,7 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 					isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(string(partContent)))
 
 					if isMatch {
-						return models.NewMatchResult(&p, true)
+						return models.NewMatchResult(&p, true).Time(r.time)
 					}
 				}
 			}
@@ -262,7 +308,7 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 			isMatch, _ := models.IsMatch(p.Payload, key)
 
 			if isMatch {
-				return models.NewMatchResult(&p, true)
+				return models.NewMatchResult(&p, true).Time(r.time)
 			}
 		}
 
@@ -285,7 +331,7 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 				isMatch, _ := models.IsMatch(p.Payload, value)
 
 				if isMatch {
-					return models.NewMatchResult(&p, true)
+					return models.NewMatchResult(&p, true).Time(r.time)
 				}
 			}
 
@@ -307,7 +353,7 @@ func (r Checker) isJSONValueHitPolicy(payloads []models.PayloadData, value inter
 			isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(value2))
 
 			if isMatch {
-				return models.NewMatchResult(&p, true)
+				return models.NewMatchResult(&p, true).Time(r.time)
 			}
 		}
 	case reflect.Map:
