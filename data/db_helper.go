@@ -106,3 +106,22 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)`
 		panic(err)
 	}
 }
+
+//LogHTTPRequest ...
+func (h *DBHelper) LogHTTPRequest(log *models.HTTPLog) {
+	conn, err := sql.Open("postgres", connString)
+	defer conn.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	sqlStatement := `
+INSERT INTO "HTTPLogs" ("Id", "CreatedAt", "TargetId", "RequestUri", "StatusCode", "RuleCheckElapsed", "HttpElapsed", "RequestSize", "ResponseSize")
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+
+	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), log.TargetID, log.RequestURI, log.StatusCode, log.RuleCheckElapsed, log.HTTPElapsed, log.RequestSize, log.ResponseSize)
+	if err != nil {
+		panic(err)
+	}
+}

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/asalih/guardian/data"
+	"github.com/asalih/guardian/models"
 	"github.com/asalih/guardian/request"
 )
 
@@ -51,9 +52,15 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	httpLog := models.NewHTTPLog()
+
 	requestIsNotSafe := request.NewRequestChecker(w, r, target).Handle()
 
+	httpLog = httpLog.RuleExecutionEnd()
+
 	if requestIsNotSafe {
+		go h.logHTTPRequest(httpLog.Build(target, r, nil))
+
 		return
 	}
 
@@ -84,8 +91,12 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	transportResponse := h.transportRequest(uriToReq, w, r)
 
 	if transportResponse == nil {
+		go h.logHTTPRequest(httpLog.Build(target, r, nil).NoResponse())
+
 		return
 	}
+
+	go h.logHTTPRequest(httpLog.Build(target, r, transportResponse))
 
 	//TODO: Response check
 }
@@ -121,4 +132,8 @@ func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.R
 	io.Copy(incomingWriter, response.Body)
 
 	return response
+}
+
+func (h GuardianHandler) logHTTPRequest(log *models.HTTPLog) {
+	h.DB.LogHTTPRequest(log)
 }

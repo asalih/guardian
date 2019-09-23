@@ -10,9 +10,3 @@ type Target struct {
 	UseHTTPS        bool
 	WAFEnabled      bool
 }
-
-/*FirewallRule The firewall rule*/
-type FirewallRule struct {
-	ID         string
-	Expression string
-}

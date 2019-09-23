@@ -57,5 +57,5 @@ func CookiesToString(cookie []*http.Cookie) (res string) {
 
 //CalcTime ...
 func CalcTime(start time.Time) int64 {
-	return time.Since(start).Nanoseconds()
+	return time.Since(start).Nanoseconds() / int64(time.Millisecond)
 }
