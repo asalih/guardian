@@ -98,7 +98,7 @@ func (r Checker) handleFirewallRuleChecker() bool {
 			},
 			"http": map[string]interface{}{
 				"query":    r.Request.URL.RawQuery,
-				"path":     r.Request.URL.RawPath,
+				"path":     r.Request.URL.Path,
 				"host":     r.Request.URL.Host,
 				"cookie":   models.CookiesToString(r.Request.Cookies()),
 				"header":   models.HeadersToString(r.Request.Header),
@@ -119,8 +119,7 @@ func (r Checker) handleFirewallRuleChecker() bool {
 	}()
 
 	select {
-	case res := <-firewallChannel:
-		fmt.Println(res)
+	case <-firewallChannel:
 	case <-time.After(3 * time.Minute):
 		panic("failed to execute rules.")
 	}
@@ -130,7 +129,7 @@ func (r Checker) handleFirewallRuleChecker() bool {
 			r.ResponseWriter.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
 
-			db.LogFirewallMatchResult(i, r.Target)
+			db.LogFirewallMatchResult(i, r.Target, r.Request.RequestURI)
 
 			return true
 		}
@@ -162,8 +161,7 @@ func (r Checker) handleWAFChecker() bool {
 	}()
 
 	select {
-	case res := <-done:
-		fmt.Println(res)
+	case <-done:
 	case <-time.After(3 * time.Minute):
 		panic("failed to execute rules.")
 	}
@@ -175,7 +173,7 @@ func (r Checker) handleWAFChecker() bool {
 
 			db := &data.DBHelper{}
 
-			go db.LogMatchResult(i, r.Target)
+			go db.LogMatchResult(i, r.Target, r.Request.RequestURI)
 
 			return true
 		}

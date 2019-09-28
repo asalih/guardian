@@ -70,7 +70,7 @@ func (h *DBHelper) GetFirewallRules(targetID string) []*models.FirewallRule {
 }
 
 //LogMatchResult ...
-func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *models.Target) {
+func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *models.Target, requestURI string) {
 	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
@@ -79,17 +79,17 @@ func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *model
 	}
 
 	sqlStatement := `
-INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "Description")
-VALUES ($1, $2, $3, $4, $5, $6, $7)`
+INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "Description", "RequestUri")
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
-	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 0, matchResult.MatchedPayload.Payload)
+	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 0, matchResult.MatchedPayload.Payload, requestURI)
 	if err != nil {
 		panic(err)
 	}
 }
 
 //LogFirewallMatchResult ...
-func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target) {
+func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target, requestURI string) {
 	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
@@ -98,10 +98,10 @@ func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResul
 	}
 
 	sqlStatement := `
-INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "FirewallRuleId")
-VALUES ($1, $2, $3, $4, $5, $6, $7)`
+INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "FirewallRuleId", "RequestUri")
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
-	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 1, matchResult.FirewallRule.ID)
+	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 1, matchResult.FirewallRule.ID, requestURI)
 	if err != nil {
 		panic(err)
 	}
