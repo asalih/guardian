@@ -29,7 +29,7 @@ jobs:
           command: make
       - run:
           name: Deploy
-          command: scp -o StrictHostKeyChecking=no -r workdir/contacts/* root@guardian-waf.com://applications/guardian/
+          command: scp -o StrictHostKeyChecking=no -r workdir/* root@guardian-waf.com://applications/guardian/
       - run:
           name: Service Restart
           command: ssh root@guardian-waf.com systemctl restart guardian.service
