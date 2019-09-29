@@ -24,3 +24,12 @@ jobs:
       # specify any bash command here prefixed with `run: `
       - run: go get -v -t -d ./...
       - run: go test -v ./...
+      - run:
+          name: Compile
+          command: gox -os="linux" -arch="amd64" -output="dist/guardian"
+      - run:
+          name: Deploy
+          command: scp -o StrictHostKeyChecking=no -r /root/project/guardian/dist/* root@guardian-waf.com://applications/guardian/
+      - run:
+          name: Service Restart
+          command: ssh root@guardian-waf.com systemctl restart guardian.service
