@@ -31,5 +31,8 @@ jobs:
           name: Deploy
           command: scp -o StrictHostKeyChecking=no -r workdir/* root@guardian-waf.com://applications/guardian/
       - run:
+          name: Deploy Payloads json
+          command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/requestPayloads.json root@guardian-waf.com://applications/guardian/ 
+      - run:
           name: Service Restart
           command: ssh root@guardian-waf.com systemctl restart guardian.service

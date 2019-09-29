@@ -1,4 +1,4 @@
-GOFILES = $(shell find . -name '*.go' -o -name '*.json')
+GOFILES = $(shell find . -name '*.go')
 
 default: build
 
