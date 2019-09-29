@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
       # specify the version
-      - image: circleci/golang:1.9
+      - image:  circleci/golang:1.12
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -26,7 +26,7 @@ jobs:
       - run: go test -v ./...
       - run:
           name: Compile
-          command: gox -os="linux" -arch="amd64" -output="dist/guardian"
+          command: make
       - run:
           name: Deploy
           command: scp -o StrictHostKeyChecking=no -r /root/project/guardian/dist/* root@guardian-waf.com://applications/guardian/
