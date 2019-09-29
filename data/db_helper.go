@@ -11,7 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var connString = "host=localhost port=5432 user=postgres password=1q2w3e dbname=GuardianDB sslmode=disable"
+var connString = "host=localhost port=5432 user=guardian password=1q2w3e dbname=GuardianDB sslmode=disable"
 
 /*DBHelper The database query helper*/
 type DBHelper struct {
