@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/asalih/guardian/models"
@@ -32,6 +33,7 @@ func (h *DBHelper) GetTarget(domain string) *models.Target {
 	rerr := row.Scan(&target.ID, &target.Domain, &target.OriginIPAddress, &target.CertKey, &target.CertCrt, &target.UseHTTPS, &target.WAFEnabled)
 
 	if rerr != nil {
+		fmt.Println(rerr)
 		return nil
 	}
 
