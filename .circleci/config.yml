@@ -29,7 +29,7 @@ jobs:
           command: make
       - run:
           name: Service Stop
-          command: ssh root@guardian-waf.com systemctl stop guardian.service
+          command: ssh -o "StrictHostKeyChecking no" root@guardian-waf.com systemctl stop guardian.service
       - run:
           name: Deploy
           command: scp -o StrictHostKeyChecking=no -r workdir/* root@guardian-waf.com://applications/guardian/
@@ -38,4 +38,4 @@ jobs:
           command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/requestPayloads.json root@guardian-waf.com://applications/guardian/ 
       - run:
           name: Service Start
-          command: ssh root@guardian-waf.com systemctl start guardian.service
+          command: ssh -o "StrictHostKeyChecking no" root@guardian-waf.com systemctl start guardian.service
