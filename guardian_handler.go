@@ -115,8 +115,18 @@ func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.R
 	req, err = http.NewRequest(incomingRequest.Method, uriToReq, incomingRequest.Body)
 	for name, value := range incomingRequest.Header {
 		//TODO: Do not pass the headers except whitelisted
+		if name == "X-Forwarded-For" {
+			continue
+		}
+
 		req.Header.Set(name, value[0])
 	}
+
+	fwIP := h.getForwardIP(incomingRequest)
+	if fwIP != "" {
+		req.Header.Set("X-Forwarded-For", fwIP)
+	}
+
 	response, err = client.Do(req)
 	defer incomingRequest.Body.Close()
 
@@ -136,4 +146,17 @@ func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.R
 
 func (h GuardianHandler) logHTTPRequest(log *models.HTTPLog) {
 	h.DB.LogHTTPRequest(log)
+}
+
+func (h GuardianHandler) getForwardIP(incomingRequest *http.Request) string {
+
+	ipAddress := incomingRequest.Header.Get("X-Real-Ip")
+	if ipAddress == "" {
+		ipAddress = incomingRequest.Header.Get("X-Forwarded-For")
+	}
+	if ipAddress == "" {
+		ipAddress = incomingRequest.RemoteAddr
+	}
+
+	return ipAddress
 }
