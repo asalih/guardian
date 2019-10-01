@@ -66,9 +66,11 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 			return nil, err
 		}
 
+		fmt.Println("Incoming request:" + clientHello.ServerName)
 		target := h.DB.GetTarget(clientHello.ServerName)
 
 		if target == nil {
+			fmt.Println("Incoming request: Target nil")
 			return nil, err
 		}
 
