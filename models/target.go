@@ -9,4 +9,5 @@ type Target struct {
 	CertCrt         string
 	UseHTTPS        bool
 	WAFEnabled      bool
+	Proto			int
 }

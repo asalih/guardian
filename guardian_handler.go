@@ -78,7 +78,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	uriToReq := r.Host
 
-	if h.IsHTTPPortListener {
+	if target.Proto == 0 {
 		uriToReq = "http://" + uriToReq
 	} else {
 		uriToReq = "https://" + uriToReq

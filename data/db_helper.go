@@ -27,10 +27,10 @@ func (h *DBHelper) GetTarget(domain string) *models.Target {
 		panic(err)
 	}
 
-	row := conn.QueryRow("SELECT \"Id\", \"Domain\", \"OriginIpAddress\", \"CertKey\", \"CertCrt\", \"UseHttps\", \"WAFEnabled\" FROM public.\"Targets\" where \"IsVerified\"=true and \"Domain\"= $1", domain)
+	row := conn.QueryRow("SELECT \"Id\", \"Domain\", \"OriginIpAddress\", \"CertKey\", \"CertCrt\", \"UseHttps\", \"WAFEnabled\", \"Proto\" FROM public.\"Targets\" where \"State\"=1 and \"Domain\"= $1", domain)
 
 	var target = &models.Target{}
-	rerr := row.Scan(&target.ID, &target.Domain, &target.OriginIPAddress, &target.CertKey, &target.CertCrt, &target.UseHTTPS, &target.WAFEnabled)
+	rerr := row.Scan(&target.ID, &target.Domain, &target.OriginIPAddress, &target.CertKey, &target.CertCrt, &target.UseHTTPS, &target.WAFEnabled, &target.Proto)
 
 	if rerr != nil {
 		fmt.Println(rerr)
