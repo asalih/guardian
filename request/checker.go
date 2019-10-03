@@ -85,7 +85,7 @@ func (r Checker) handleFirewallRuleChecker() bool {
 	go func() {
 		var wg sync.WaitGroup
 
-		firewallRules := db.GetFirewallRules(r.Target.ID)
+		firewallRules := db.GetRequestFirewallRules(r.Target.ID)
 		lenOfRules := len(firewallRules)
 
 		r.firewallResult = make(chan *models.FirewallMatchResult, lenOfRules)
@@ -129,7 +129,7 @@ func (r Checker) handleFirewallRuleChecker() bool {
 			r.ResponseWriter.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
 
-			db.LogFirewallMatchResult(i, r.Target, r.Request.RequestURI)
+			db.LogFirewallMatchResult(i, r.Target, r.Request.RequestURI, false)
 
 			return true
 		}
@@ -173,7 +173,7 @@ func (r Checker) handleWAFChecker() bool {
 
 			db := &data.DBHelper{}
 
-			go db.LogMatchResult(i, r.Target, r.Request.RequestURI)
+			go db.LogMatchResult(i, r.Target, r.Request.RequestURI, false)
 
 			return true
 		}

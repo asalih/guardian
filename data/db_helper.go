@@ -40,8 +40,8 @@ func (h *DBHelper) GetTarget(domain string) *models.Target {
 	return target
 }
 
-//GetFirewallRules Gets the firewall rule
-func (h *DBHelper) GetFirewallRules(targetID string) []*models.FirewallRule {
+//GetRequestFirewallRules Gets the firewall rule
+func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRule {
 	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
@@ -49,7 +49,38 @@ func (h *DBHelper) GetFirewallRules(targetID string) []*models.FirewallRule {
 		panic(err)
 	}
 
-	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\" FROM public.\"FirewallRules\" where \"TargetId\"= $1", targetID)
+	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\" FROM public.\"FirewallRules\" where \"RuleFor\"=0 and \"TargetId\"= $1", targetID)
+
+	if qerr != nil {
+		panic(qerr)
+	}
+
+	result := make([]*models.FirewallRule, 0)
+
+	for rows.Next() {
+		var fwRule = &models.FirewallRule{}
+		ferr := rows.Scan(&fwRule.ID, &fwRule.Expression)
+
+		if ferr != nil {
+			panic(ferr)
+		}
+
+		result = append(result, fwRule)
+	}
+
+	return result
+}
+
+//GetResponseFirewallRules Gets the firewall rule
+func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallRule {
+	conn, err := sql.Open("postgres", connString)
+	defer conn.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\" FROM public.\"FirewallRules\" where \"RuleFor\"=1 and \"TargetId\"= $1", targetID)
 
 	if qerr != nil {
 		panic(qerr)
@@ -72,7 +103,7 @@ func (h *DBHelper) GetFirewallRules(targetID string) []*models.FirewallRule {
 }
 
 //LogMatchResult ...
-func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *models.Target, requestURI string) {
+func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *models.Target, requestURI string, forResponse bool) {
 	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
@@ -81,17 +112,22 @@ func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *model
 	}
 
 	sqlStatement := `
-INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "Description", "RequestUri")
+INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "Description", "RequestUri", "RuleFor")
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
-	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 0, matchResult.MatchedPayload.Payload, requestURI)
+	ruleFor := 0
+	if forResponse {
+		ruleFor = 1
+	}
+
+	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 0, matchResult.MatchedPayload.Payload, requestURI, ruleFor)
 	if err != nil {
 		panic(err)
 	}
 }
 
 //LogFirewallMatchResult ...
-func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target, requestURI string) {
+func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target, requestURI string, forResponse bool) {
 	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
@@ -100,10 +136,15 @@ func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResul
 	}
 
 	sqlStatement := `
-INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "FirewallRuleId", "RequestUri")
+INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "FirewallRuleId", "RequestUri", "RuleFor")
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 
-	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 1, matchResult.FirewallRule.ID, requestURI)
+	ruleFor := 0
+	if forResponse {
+		ruleFor = 1
+	}
+
+	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 1, matchResult.FirewallRule.ID, requestURI, ruleFor)
 	if err != nil {
 		panic(err)
 	}
