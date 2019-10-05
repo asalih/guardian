@@ -55,7 +55,7 @@ func InitRequestPayloadDataCollection() {
 	LenOfGroupedRequestPayloadDataCollection = len(RequestCheckPointPayloadData)
 }
 
-//InitRequestPayloadDataCollection Payload data initializer
+//InitResponsePayloadDataCollection Payload data initializer
 func InitResponsePayloadDataCollection() {
 	jsonFile, err := ioutil.ReadFile("responsePayloads.json")
 

@@ -12,7 +12,7 @@
     {"action": "block", "checkPoint": "Form", "payload": "(?i)\\s+(and|or|rlike)\\s+(if|updatexml)\\(", "type": "Basic SQL Injection Attempt"},
     {"action": "block", "checkPoint": "Form", "payload": "(?i)/\\*(!|\\x00)", "type": "Basic SQL Injection Comment"},
     {"action": "block", "checkPoint": "Form", "payload": "(?i)union[\\s/\\*]+select", "type": "Union SQL Injection"},
-    {"action": "block", "checkPoint": "Form", "payload": "(^|\\&\\s*|\\|\\s*)(pwd|ls|ll|whoami|id|net\\s+user)$", "type": "Command Injection"},
+    {"action": "block", "checkPoint": "Form", "payload": "(^|\\&\\s*|\\|\\s*)(pwd|ls|ll|whoami|net\\s+user)$", "type": "Command Injection"},
     {"action": "block", "checkPoint": "Form", "payload": "(?i)(eval|system|exec|execute|passthru|shell_exec|phpinfo)\\(", "type": "Web Shell"},
     {"action": "block", "checkPoint": "Upload", "payload": "(?i)\\.(php|jsp|aspx|asp|exe|asa)", "type": "Upload"},
     {"action": "block", "checkPoint": "Query", "payload": "\\.\\./\\.\\./|/etc/passwd$", "type": "Basic Path Traversal"}
