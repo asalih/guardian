@@ -4,9 +4,9 @@ import "time"
 
 //MatchResult Match result
 type MatchResult struct {
-	MatchedPayload *PayloadData
-	Elapsed        int64
-	IsMatched      bool
+	MatchedPayloads []*PayloadData
+	Elapsed         int64
+	IsMatched       bool
 }
 
 //FirewallMatchResult Firewall rules match result
@@ -17,8 +17,8 @@ type FirewallMatchResult struct {
 }
 
 //NewMatchResult Inits match result
-func NewMatchResult(payload *PayloadData, isMatched bool) *MatchResult {
-	return &MatchResult{payload, 0, isMatched}
+func NewMatchResult(isMatched bool) *MatchResult {
+	return &MatchResult{nil, 0, isMatched}
 }
 
 //NewFirewallMatchResult Inits fw match result
@@ -29,6 +29,20 @@ func NewFirewallMatchResult(rule *FirewallRule, isMatched bool) *FirewallMatchRe
 //Time calculates elapsed time
 func (m MatchResult) Time(now time.Time) *MatchResult {
 	m.Elapsed = CalcTime(now)
+
+	return &m
+}
+
+//Append ...
+func (m MatchResult) Append(payload *PayloadData) *MatchResult {
+	m.MatchedPayloads = append(m.MatchedPayloads, payload)
+
+	return &m
+}
+
+//SetMatch ...
+func (m MatchResult) SetMatch(isMatched bool) *MatchResult {
+	m.IsMatched = isMatched
 
 	return &m
 }

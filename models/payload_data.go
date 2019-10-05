@@ -6,44 +6,75 @@ import (
 	"io/ioutil"
 )
 
-//PayloadDataCollection parsed json file
-var PayloadDataCollection []PayloadData
+//RequestPayloadDataCollection parsed json file
+var RequestPayloadDataCollection []PayloadData
 
-//CheckPointPayloadData grouped by checkpoint
-var CheckPointPayloadData map[string][]PayloadData = make(map[string][]PayloadData)
+//ResponsePayloadDataCollection parsed json file
+var ResponsePayloadDataCollection []PayloadData
 
-//LenOfGroupedPayloadDataCollection parsed payload data length
-var LenOfGroupedPayloadDataCollection int
+//RequestCheckPointPayloadData grouped by checkpoint
+var RequestCheckPointPayloadData map[string][]PayloadData = make(map[string][]PayloadData)
+
+//ResponseCheckPointPayloadData grouped by checkpoint
+var ResponseCheckPointPayloadData map[string][]PayloadData = make(map[string][]PayloadData)
+
+//LenOfGroupedRequestPayloadDataCollection parsed payload data length
+var LenOfGroupedRequestPayloadDataCollection int
+
+//LenOfGroupedResponsePayloadDataCollection parsed payload data length
+var LenOfGroupedResponsePayloadDataCollection int
 
 //PayloadData for checking requests
 type PayloadData struct {
-	CheckPoint string `json:"checkPoint"`
-	Payload    string `json:"payload"`
-	Type       string `json:"type"`
+	Action      string `json:"action"`
+	CheckPoint  string `json:"checkPoint"`
+	Payload     string `json:"payload"`
+	Type        string `json:"type"`
+	MatchResult *PayloadData
 }
 
-//InitPayloadDataCollection Payload data initializer
-func InitPayloadDataCollection() {
+//InitRequestPayloadDataCollection Payload data initializer
+func InitRequestPayloadDataCollection() {
 	jsonFile, err := ioutil.ReadFile("requestPayloads.json")
 
 	if err != nil {
 		panic(err)
 	}
 
-	jerr := json.Unmarshal(jsonFile, &PayloadDataCollection)
+	jerr := json.Unmarshal(jsonFile, &RequestPayloadDataCollection)
 
 	if jerr != nil {
 		fmt.Println(jerr)
 		panic(jerr)
 	}
 
-	//CheckPointPayloadData := make(map[string][]PayloadData)
-
-	for _, m := range PayloadDataCollection {
-		CheckPointPayloadData[m.CheckPoint] = append(CheckPointPayloadData[m.CheckPoint], m)
+	for _, m := range RequestPayloadDataCollection {
+		RequestCheckPointPayloadData[m.CheckPoint] = append(RequestCheckPointPayloadData[m.CheckPoint], m)
 	}
 
-	LenOfGroupedPayloadDataCollection = len(CheckPointPayloadData)
+	LenOfGroupedRequestPayloadDataCollection = len(RequestCheckPointPayloadData)
+}
+
+//InitRequestPayloadDataCollection Payload data initializer
+func InitResponsePayloadDataCollection() {
+	jsonFile, err := ioutil.ReadFile("responsePayloads.json")
+
+	if err != nil {
+		panic(err)
+	}
+
+	jerr := json.Unmarshal(jsonFile, &ResponsePayloadDataCollection)
+
+	if jerr != nil {
+		fmt.Println(jerr)
+		panic(jerr)
+	}
+
+	for _, m := range ResponsePayloadDataCollection {
+		ResponseCheckPointPayloadData[m.CheckPoint] = append(ResponseCheckPointPayloadData[m.CheckPoint], m)
+	}
+
+	LenOfGroupedResponsePayloadDataCollection = len(ResponseCheckPointPayloadData)
 }
 
 //Filter filters the payload data

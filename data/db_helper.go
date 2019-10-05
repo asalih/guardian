@@ -49,7 +49,7 @@ func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRu
 		panic(err)
 	}
 
-	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\" FROM public.\"FirewallRules\" where \"RuleFor\"=0 and \"TargetId\"= $1", targetID)
+	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\", \"Action\" FROM public.\"FirewallRules\" where \"IsActive\"=true and \"RuleFor\"=0 and \"TargetId\"= $1", targetID)
 
 	if qerr != nil {
 		panic(qerr)
@@ -59,7 +59,7 @@ func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRu
 
 	for rows.Next() {
 		var fwRule = &models.FirewallRule{}
-		ferr := rows.Scan(&fwRule.ID, &fwRule.Expression)
+		ferr := rows.Scan(&fwRule.ID, &fwRule.Expression, &fwRule.Action)
 
 		if ferr != nil {
 			panic(ferr)
@@ -80,7 +80,7 @@ func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallR
 		panic(err)
 	}
 
-	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\" FROM public.\"FirewallRules\" where \"RuleFor\"=1 and \"TargetId\"= $1", targetID)
+	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\", \"Action\" FROM public.\"FirewallRules\" where \"IsActive\"=true and \"RuleFor\"=1 and \"TargetId\"= $1", targetID)
 
 	if qerr != nil {
 		panic(qerr)
@@ -103,7 +103,13 @@ func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallR
 }
 
 //LogMatchResult ...
-func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *models.Target, requestURI string, forResponse bool) {
+func (h *DBHelper) LogMatchResult(
+	matchResult *models.MatchResult,
+	payload *models.PayloadData,
+	target *models.Target,
+	requestURI string,
+	forResponse bool) {
+
 	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
@@ -112,18 +118,30 @@ func (h *DBHelper) LogMatchResult(matchResult *models.MatchResult, target *model
 	}
 
 	sqlStatement := `
-INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "Description", "RequestUri", "RuleFor")
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "Description", "RequestUri", "RuleFor", "WafAction")
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	ruleFor := 0
 	if forResponse {
 		ruleFor = 1
 	}
 
-	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 0, matchResult.MatchedPayload.Payload, requestURI, ruleFor)
+	wafAction := models.GetWafAction(payload.Action)
+	_, err = conn.Exec(sqlStatement,
+		uuid.New(),
+		time.Now(),
+		target.ID, true,
+		matchResult.Elapsed,
+		models.LogTypeWAF,
+		payload.Payload,
+		requestURI,
+		ruleFor,
+		wafAction)
+
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 //LogFirewallMatchResult ...
@@ -136,15 +154,26 @@ func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResul
 	}
 
 	sqlStatement := `
-INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "FirewallRuleId", "RequestUri", "RuleFor")
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "FirewallRuleId", "RequestUri", "RuleFor", "WafAction")
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	ruleFor := 0
 	if forResponse {
 		ruleFor = 1
 	}
 
-	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), target.ID, true, matchResult.Elapsed, 1, matchResult.FirewallRule.ID, requestURI, ruleFor)
+	_, err = conn.Exec(sqlStatement,
+		uuid.New(),
+		time.Now(),
+		target.ID,
+		true,
+		matchResult.Elapsed,
+		models.LogTypeFirewall,
+		matchResult.FirewallRule.ID,
+		requestURI,
+		ruleFor,
+		matchResult.FirewallRule.Action)
+
 	if err != nil {
 		panic(err)
 	}
@@ -160,10 +189,21 @@ func (h *DBHelper) LogHTTPRequest(log *models.HTTPLog) {
 	}
 
 	sqlStatement := `
-INSERT INTO "HTTPLogs" ("Id", "CreatedAt", "TargetId", "RequestUri", "StatusCode", "RuleCheckElapsed", "HttpElapsed", "RequestSize", "ResponseSize")
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+INSERT INTO "HTTPLogs" ("Id", "CreatedAt", "TargetId", "RequestUri", "StatusCode", "RequestRulesCheckElapsed", "ResponseRulesCheckElapsed", "HttpElapsed", "RequestSize", "ResponseSize")
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
-	_, err = conn.Exec(sqlStatement, uuid.New(), time.Now(), log.TargetID, log.RequestURI, log.StatusCode, log.RuleCheckElapsed, log.HTTPElapsed, log.RequestSize, log.ResponseSize)
+	_, err = conn.Exec(sqlStatement,
+		uuid.New(),
+		time.Now(),
+		log.TargetID,
+		log.RequestURI,
+		log.StatusCode,
+		log.RequestRulesCheckElapsed,
+		log.ResponseRulesCheckElapsed,
+		log.HTTPElapsed,
+		log.RequestSize,
+		log.ResponseSize)
+
 	if err != nil {
 		panic(err)
 	}

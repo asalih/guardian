@@ -125,7 +125,10 @@ func (r Checker) handleFirewallRuleChecker() bool {
 	}
 
 	for i := range r.firewallResult {
-		if i.IsMatched {
+		//Action: 0 is block
+		//Action: 1 is allow
+		if i.IsMatched && i.FirewallRule.Action == 0 ||
+			!i.IsMatched && i.FirewallRule.Action == 1 {
 			r.ResponseWriter.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
 
@@ -145,11 +148,11 @@ func (r Checker) handleWAFChecker() bool {
 	go func() {
 		var wg sync.WaitGroup
 
-		r.result = make(chan *models.MatchResult, models.LenOfGroupedPayloadDataCollection)
+		r.result = make(chan *models.MatchResult, models.LenOfGroupedRequestPayloadDataCollection)
 
-		wg.Add(models.LenOfGroupedPayloadDataCollection)
+		wg.Add(models.LenOfGroupedRequestPayloadDataCollection)
 
-		for key, payload := range models.CheckPointPayloadData {
+		for key, payload := range models.RequestCheckPointPayloadData {
 			go r.handlePayload(key, payload, &wg)
 		}
 
@@ -167,16 +170,22 @@ func (r Checker) handleWAFChecker() bool {
 	}
 
 	for i := range r.result {
-		if i.IsMatched {
-			r.ResponseWriter.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
+		for _, m := range i.MatchedPayloads {
+			if i.IsMatched {
+				if m.Action == "block" {
+					r.ResponseWriter.WriteHeader(http.StatusBadRequest)
+					fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
 
-			db := &data.DBHelper{}
+					db := &data.DBHelper{}
 
-			go db.LogMatchResult(i, r.Target, r.Request.RequestURI, false)
+					go db.LogMatchResult(i, m, r.Target, r.Request.RequestURI, false)
 
-			return true
+					return true
+				}
+				//TODO: Handle new action types if needed
+			}
 		}
+
 	}
 
 	return false
@@ -191,11 +200,7 @@ func (r Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules 
 		fmt.Println(everr)
 	}
 
-	if evalResult.(bool) {
-		r.firewallResult <- models.NewFirewallMatchResult(rule, evalResult.(bool)).Time(r.time)
-	} else {
-		r.firewallResult <- models.NewFirewallMatchResult(nil, false)
-	}
+	r.firewallResult <- models.NewFirewallMatchResult(rule, evalResult.(bool)).Time(r.time)
 }
 
 func (r Checker) handlePayload(key string, payloads []models.PayloadData, wg *sync.WaitGroup) {
@@ -210,9 +215,9 @@ func (r Checker) handlePayload(key string, payloads []models.PayloadData, wg *sy
 		r.result <- r.handleForm(payloads)
 	case "Upload":
 		//Upload check point will be handled in handleForm function
-		r.result <- models.NewMatchResult(nil, false)
+		r.result <- models.NewMatchResult(false)
 	default:
-		r.result <- models.NewMatchResult(nil, false)
+		r.result <- models.NewMatchResult(false)
 	}
 }
 
@@ -221,11 +226,11 @@ func (r Checker) handleQuery(payloads []models.PayloadData) *models.MatchResult 
 		isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(r.Request.URL.RawQuery))
 
 		if isMatch {
-			return models.NewMatchResult(&p, true).Time(r.time)
+			return models.NewMatchResult(true).Append(&p).Time(r.time)
 		}
 	}
 
-	return models.NewMatchResult(nil, false)
+	return models.NewMatchResult(false)
 }
 
 func (r Checker) handlePath(payloads []models.PayloadData) *models.MatchResult {
@@ -233,11 +238,11 @@ func (r Checker) handlePath(payloads []models.PayloadData) *models.MatchResult {
 		isMatch, _ := models.IsMatch(p.Payload, r.Request.URL.Path)
 
 		if isMatch {
-			return models.NewMatchResult(&p, true).Time(r.time)
+			return models.NewMatchResult(true).Append(&p).Time(r.time)
 		}
 	}
 
-	return models.NewMatchResult(nil, false)
+	return models.NewMatchResult(false)
 }
 
 func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
@@ -250,12 +255,12 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 			for _, filesHeader := range r.Request.MultipartForm.File {
 				for _, fileHeader := range filesHeader {
 					fileExtension := filepath.Ext(fileHeader.Filename) // .php
-					uploadCheck := models.Filter(models.PayloadDataCollection, func(p models.PayloadData) bool { return p.CheckPoint == "Upload" })
+					uploadCheck := models.Filter(models.RequestPayloadDataCollection, func(p models.PayloadData) bool { return p.CheckPoint == "Upload" })
 
 					for _, p := range uploadCheck {
 						matched, _ := models.IsMatch(p.Payload, fileExtension)
 						if matched == true {
-							return models.NewMatchResult(&p, true).Time(r.time)
+							return models.NewMatchResult(true).Append(&p).Time(r.time)
 						}
 					}
 				}
@@ -275,7 +280,7 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 					isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(string(partContent)))
 
 					if isMatch {
-						return models.NewMatchResult(&p, true).Time(r.time)
+						return models.NewMatchResult(true).Append(&p).Time(r.time)
 					}
 				}
 			}
@@ -306,7 +311,7 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 			isMatch, _ := models.IsMatch(p.Payload, key)
 
 			if isMatch {
-				return models.NewMatchResult(&p, true).Time(r.time)
+				return models.NewMatchResult(true).Append(&p).Time(r.time)
 			}
 		}
 
@@ -329,16 +334,16 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 				isMatch, _ := models.IsMatch(p.Payload, value)
 
 				if isMatch {
-					return models.NewMatchResult(&p, true).Time(r.time)
+					return models.NewMatchResult(true).Append(&p).Time(r.time)
 				}
 			}
 
-			return models.NewMatchResult(nil, false)
+			return models.NewMatchResult(false)
 		}
 
 	}
 
-	return models.NewMatchResult(nil, false)
+	return models.NewMatchResult(false)
 }
 
 func (r Checker) isJSONValueHitPolicy(payloads []models.PayloadData, value interface{}) *models.MatchResult {
@@ -351,7 +356,7 @@ func (r Checker) isJSONValueHitPolicy(payloads []models.PayloadData, value inter
 			isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(value2))
 
 			if isMatch {
-				return models.NewMatchResult(&p, true).Time(r.time)
+				return models.NewMatchResult(true).Append(&p).Time(r.time)
 			}
 		}
 	case reflect.Map:
@@ -371,5 +376,5 @@ func (r Checker) isJSONValueHitPolicy(payloads []models.PayloadData, value inter
 			}
 		}
 	}
-	return models.NewMatchResult(nil, false)
+	return models.NewMatchResult(false)
 }

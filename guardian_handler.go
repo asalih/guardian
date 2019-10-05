@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/asalih/guardian/response"
+
 	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/models"
 	"github.com/asalih/guardian/request"
@@ -56,7 +58,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	requestIsNotSafe := request.NewRequestChecker(w, r, target).Handle()
 
-	httpLog = httpLog.RuleExecutionEnd()
+	httpLog = httpLog.RequestRulesExecutionEnd()
 
 	if requestIsNotSafe {
 		go h.logHTTPRequest(httpLog.Build(target, r, nil))
@@ -96,9 +98,21 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go h.logHTTPRequest(httpLog.Build(target, r, transportResponse))
+	httpLog.ResponseRulesExecutionStart()
 
-	//TODO: Response check
+	responseIsNotSafe := response.NewResponseChecker(w, r, transportResponse, target).Handle()
+
+	httpLog = httpLog.RequestRulesExecutionEnd()
+
+	if responseIsNotSafe {
+		go h.logHTTPRequest(httpLog.Build(target, r, nil))
+
+		return
+	}
+
+	h.transformResponse(w, r, transportResponse)
+
+	go h.logHTTPRequest(httpLog.Build(target, r, transportResponse))
 }
 
 //TransportRequest Transports the incoming request
@@ -128,20 +142,22 @@ func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.R
 	}
 
 	response, err = client.Do(req)
-	defer incomingRequest.Body.Close()
 
 	if err != nil {
 		http.Error(incomingWriter, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
 
+	return response
+}
+
+func (h GuardianHandler) transformResponse(incomingWriter http.ResponseWriter, incomingRequest *http.Request, response *http.Response) {
 	for k, v := range response.Header {
 		incomingWriter.Header().Set(k, v[0])
 	}
 	incomingWriter.WriteHeader(response.StatusCode)
 	io.Copy(incomingWriter, response.Body)
-
-	return response
+	defer incomingRequest.Body.Close()
 }
 
 func (h GuardianHandler) logHTTPRequest(log *models.HTTPLog) {

@@ -7,20 +7,21 @@ import (
 
 //HTTPLog represents http log
 type HTTPLog struct {
-	TargetID         string
-	RequestURI       string
-	StatusCode       int
-	RuleCheckElapsed int64
-	HTTPElapsed      int64
-	RequestSize      int64
-	ResponseSize     int64
+	TargetID                  string
+	RequestURI                string
+	StatusCode                int
+	RequestRulesCheckElapsed  int64
+	ResponseRulesCheckElapsed int64
+	HTTPElapsed               int64
+	RequestSize               int64
+	ResponseSize              int64
 
 	timer time.Time
 }
 
 //NewHTTPLog inits HTTP log
 func NewHTTPLog() *HTTPLog {
-	return &HTTPLog{"", "", 0, 0, 0, 0, 0, time.Now()}
+	return &HTTPLog{"", "", 0, 0, 0, 0, 0, 0, time.Now()}
 }
 
 //Build Fills HTTP Log
@@ -48,9 +49,23 @@ func (h HTTPLog) NoResponse() *HTTPLog {
 	return &h
 }
 
-//RuleExecutionEnd Calculates the time for execution of rules
-func (h HTTPLog) RuleExecutionEnd() *HTTPLog {
-	h.RuleCheckElapsed = CalcTime(h.timer)
+//RequestRulesExecutionEnd Calculates the time for execution of rules
+func (h HTTPLog) RequestRulesExecutionEnd() *HTTPLog {
+	h.RequestRulesCheckElapsed = CalcTime(h.timer)
+
+	return &h
+}
+
+//ResponseRulesExecutionStart Response execution time measure starter
+func (h HTTPLog) ResponseRulesExecutionStart() *HTTPLog {
+	h.timer = time.Now()
+
+	return &h
+}
+
+//ResponseRulesExecutionEnd Response execution time measure ender
+func (h HTTPLog) ResponseRulesExecutionEnd() *HTTPLog {
+	h.ResponseRulesCheckElapsed = CalcTime(h.timer)
 
 	return &h
 }

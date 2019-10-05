@@ -4,4 +4,5 @@ package models
 type FirewallRule struct {
 	ID         string
 	Expression string
+	Action     int
 }
