@@ -169,15 +169,17 @@ func (r Checker) handleWAFChecker() bool {
 	for i := range r.result {
 		for _, m := range i.MatchedPayloads {
 			if i.IsMatched {
+				db := &data.DBHelper{}
 				if m.Action == "block" {
 					r.ResponseWriter.WriteHeader(http.StatusBadRequest)
 					fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
 
-					db := &data.DBHelper{}
-
-					go db.LogMatchResult(i, m, r.Target, r.Request.RequestURI, false)
+					go db.LogMatchResult(i, m, r.Target, r.Request.RequestURI, true)
 
 					return true
+				} else if m.Action == "remove" {
+					//Probably action took previously. Just log it
+					go db.LogMatchResult(i, m, r.Target, r.Request.RequestURI, true)
 				}
 				//TODO: Handle new action types
 			}
