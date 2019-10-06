@@ -7,7 +7,8 @@ type Target struct {
 	OriginIPAddress string
 	CertKey         string
 	CertCrt         string
+	AutoCert        bool
 	UseHTTPS        bool
 	WAFEnabled      bool
-	Proto			int
+	Proto           int
 }

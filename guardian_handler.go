@@ -66,18 +66,6 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.DefaultTransport.(*http.Transport).DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-
-		uri, ferr := url.Parse(addr)
-		if ferr != nil {
-			panic(ferr)
-		}
-
-		addr = target.OriginIPAddress + ":" + uri.Opaque
-
-		return dialer.DialContext(ctx, network, addr)
-	}
-
 	uriToReq := r.Host
 
 	if target.Proto == 0 {
@@ -90,7 +78,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		uriToReq += r.RequestURI
 	}
 
-	transportResponse := h.transportRequest(uriToReq, w, r)
+	transportResponse := h.transportRequest(uriToReq, w, r, target)
 
 	if transportResponse == nil {
 		go h.logHTTPRequest(httpLog.Build(target, r, nil).NoResponse())
@@ -116,7 +104,11 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 //TransportRequest Transports the incoming request
-func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.ResponseWriter, incomingRequest *http.Request) *http.Response {
+func (h GuardianHandler) transportRequest(uriToReq string,
+	incomingWriter http.ResponseWriter,
+	incomingRequest *http.Request,
+	target *models.Target) *http.Response {
+
 	var response *http.Response
 	var err error
 	var req *http.Request
@@ -124,6 +116,19 @@ func (h GuardianHandler) transportRequest(uriToReq string, incomingWriter http.R
 	//timeout is 45 secs for to pass to origin server.
 	client := &http.Client{
 		Timeout: time.Second * 45,
+		Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				//TODO: Check better solutions for dialcontext like timeouts.
+				uri, ferr := url.Parse(addr)
+				if ferr != nil {
+					panic(ferr)
+				}
+
+				addr = target.OriginIPAddress + ":" + uri.Opaque
+
+				return dialer.DialContext(ctx, network, addr)
+			},
+		},
 	}
 
 	req, err = http.NewRequest(incomingRequest.Method, uriToReq, incomingRequest.Body)
