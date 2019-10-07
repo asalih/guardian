@@ -3,7 +3,6 @@ package data
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/asalih/guardian/models"
@@ -13,15 +12,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func getConnectionString() string {
-	connString := os.Getenv("DB_CONNECTION_STR")
-
-	if connString == "" {
-		connString = "host=167.71.46.213 port=5432 user=guardian password=#&Lx&M7c$7E^Zrda dbname=guardiandb sslmode=disable"
-	}
-
-	return connString
-}
+var connString = "host=167.71.46.213 port=5432 user=guardian password=#&Lx&M7c$7E^Zrda dbname=guardiandb sslmode=disable"
 
 /*DBHelper The database query helper*/
 type DBHelper struct {
@@ -29,7 +20,7 @@ type DBHelper struct {
 
 /*GetTarget Reads the Target from database*/
 func (h *DBHelper) GetTarget(domain string) *models.Target {
-	conn, err := sql.Open("postgres", getConnectionString())
+	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
 	if err != nil {
@@ -59,7 +50,7 @@ func (h *DBHelper) GetTarget(domain string) *models.Target {
 
 //GetRequestFirewallRules Gets the firewall rule
 func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRule {
-	conn, err := sql.Open("postgres", getConnectionString())
+	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
 	if err != nil {
@@ -90,7 +81,7 @@ func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRu
 
 //GetResponseFirewallRules Gets the firewall rule
 func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallRule {
-	conn, err := sql.Open("postgres", getConnectionString())
+	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
 	if err != nil {
@@ -127,7 +118,7 @@ func (h *DBHelper) LogMatchResult(
 	requestURI string,
 	forResponse bool) {
 
-	conn, err := sql.Open("postgres", getConnectionString())
+	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
 	if err != nil {
@@ -163,7 +154,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 //LogFirewallMatchResult ...
 func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target, requestURI string, forResponse bool) {
-	conn, err := sql.Open("postgres", getConnectionString())
+	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
 	if err != nil {
@@ -198,7 +189,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 //LogHTTPRequest ...
 func (h *DBHelper) LogHTTPRequest(log *models.HTTPLog) {
-	conn, err := sql.Open("postgres", getConnectionString())
+	conn, err := sql.Open("postgres", connString)
 	defer conn.Close()
 
 	if err != nil {
