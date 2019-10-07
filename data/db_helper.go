@@ -14,10 +14,10 @@ import (
 )
 
 func getConnectionString() string {
-	connString := os.Getenv("DB_Connection")
+	connString := os.Getenv("DB_CONNECTION_STR")
 
 	if connString == "" {
-		connString = "host=localhost port=5432 user=guardian password=1q2w3e dbname=guardiandb sslmode=disable"
+		connString = "host=167.71.46.213 port=5432 user=guardian password=#&Lx&M7c$7E^Zrda dbname=guardiandb sslmode=disable"
 	}
 
 	return connString
