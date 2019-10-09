@@ -12,15 +12,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var connString = "host=167.71.46.213 port=5432 user=guardian password=#&Lx&M7c$7E^Zrda dbname=guardiandb sslmode=disable"
-
 /*DBHelper The database query helper*/
 type DBHelper struct {
 }
 
 /*GetTarget Reads the Target from database*/
 func (h *DBHelper) GetTarget(domain string) *models.Target {
-	conn, err := sql.Open("postgres", connString)
+	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
 	if err != nil {
@@ -50,7 +48,7 @@ func (h *DBHelper) GetTarget(domain string) *models.Target {
 
 //GetRequestFirewallRules Gets the firewall rule
 func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRule {
-	conn, err := sql.Open("postgres", connString)
+	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
 	if err != nil {
@@ -81,7 +79,7 @@ func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRu
 
 //GetResponseFirewallRules Gets the firewall rule
 func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallRule {
-	conn, err := sql.Open("postgres", connString)
+	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
 	if err != nil {
@@ -118,7 +116,7 @@ func (h *DBHelper) LogMatchResult(
 	requestURI string,
 	forResponse bool) {
 
-	conn, err := sql.Open("postgres", connString)
+	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
 	if err != nil {
@@ -154,7 +152,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 //LogFirewallMatchResult ...
 func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target, requestURI string, forResponse bool) {
-	conn, err := sql.Open("postgres", connString)
+	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
 	if err != nil {
@@ -189,7 +187,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 //LogHTTPRequest ...
 func (h *DBHelper) LogHTTPRequest(log *models.HTTPLog) {
-	conn, err := sql.Open("postgres", connString)
+	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
 	if err != nil {
