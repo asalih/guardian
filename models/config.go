@@ -22,8 +22,6 @@ func InitConfig() {
 
 	guardianEnv := os.Getenv("GUARDIAN_ENV")
 
-	fmt.Println(guardianEnv)
-
 	if guardianEnv != "" {
 		cnfFile += "." + strings.ToLower(guardianEnv)
 	} else {
@@ -31,8 +29,6 @@ func InitConfig() {
 	}
 
 	cnfFile += ".json"
-
-	fmt.Println(cnfFile)
 
 	jsonFile, err := ioutil.ReadFile(cnfFile)
 
