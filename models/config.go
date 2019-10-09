@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -20,6 +21,9 @@ func InitConfig() {
 	cnfFile := "appsettings"
 
 	guardianEnv := os.Getenv("GUARDIAN_ENV")
+
+	fmt.Println(guardianEnv)
+
 	if guardianEnv != "" {
 		cnfFile += "." + strings.ToLower(guardianEnv)
 	} else {
@@ -27,6 +31,8 @@ func InitConfig() {
 	}
 
 	cnfFile += ".json"
+
+	fmt.Println(cnfFile)
 
 	jsonFile, err := ioutil.ReadFile(cnfFile)
 
