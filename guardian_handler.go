@@ -34,10 +34,13 @@ func NewGuardianHandler(isHTTPPortListener bool) *GuardianHandler {
 }
 
 func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Guardian Handler Executing: " + r.URL.Host)
+
 	target := h.DB.GetTarget(r.Host)
 
 	if target == nil {
 		fmt.Fprintf(w, "Your application not authorized yet! Check your implementation. %s", r.URL.Path)
+		fmt.Println("Unauthorized Application requested." + r.URL.Host)
 
 		return
 	}
