@@ -18,13 +18,16 @@ type HTTPServer struct {
 	DB *data.DBHelper
 }
 
-var certManager = autocert.Manager{
+var CertManager = autocert.Manager{
 	Prompt: autocert.AcceptTOS,
 	Cache:  autocert.DirCache("certs"),
 }
 
+var CertManagerHTTPHandler = CertManager.HTTPHandler(nil)
+
 /*NewHTTPServer HTTP server initializer*/
 func NewHTTPServer() *HTTPServer {
+
 	return &HTTPServer{&data.DBHelper{}}
 }
 
@@ -93,7 +96,7 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 		}
 
 		if target.AutoCert {
-			return certManager.GetCertificate(clientHello)
+			return CertManager.GetCertificate(clientHello)
 		}
 
 		if !target.CertCrt.Valid && !target.CertKey.Valid {

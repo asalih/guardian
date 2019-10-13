@@ -42,6 +42,11 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if target.AutoCert && h.IsHTTPPortListener {
+		CertManagerHTTPHandler.ServeHTTP(w, r)
+		return
+	}
+
 	if target.UseHTTPS && h.IsHTTPPortListener {
 		redirectToURI := "https://" + r.Host
 
