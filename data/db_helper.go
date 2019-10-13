@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/asalih/guardian/models"
@@ -18,6 +19,18 @@ type DBHelper struct {
 
 /*GetTarget Reads the Target from database*/
 func (h *DBHelper) GetTarget(domain string) *models.Target {
+	target := GetTarget(domain)
+
+	if target == nil {
+		if strings.HasPrefix("www.") == nil {
+			return h.getTarget(strings.Replace(domain, "www.", ""))
+		} else {
+			return h.getTarget("www." + domain)
+		}
+	}
+}
+
+func (h *DBHelper) getTarget(domain string) *models.Target {
 	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
