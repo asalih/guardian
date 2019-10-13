@@ -34,7 +34,7 @@ func NewGuardianHandler(isHTTPPortListener bool) *GuardianHandler {
 }
 
 func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Guardian Handler Executing: " + r.URL.Host)
+	fmt.Println("Guardian Handler Executing: " + r.Host)
 
 	target := h.DB.GetTarget(r.Host)
 
