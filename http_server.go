@@ -19,8 +19,9 @@ type HTTPServer struct {
 }
 
 var CertManager = autocert.Manager{
-	Prompt: autocert.AcceptTOS,
-	Cache:  autocert.DirCache("certs"),
+	Prompt:     autocert.AcceptTOS,
+	Cache:      autocert.DirCache("certs"),
+	HostPolicy: autocert.HostWhitelist("guardsparker.com"),
 }
 
 var CertManagerHTTPHandler = CertManager.HTTPHandler(nil)
