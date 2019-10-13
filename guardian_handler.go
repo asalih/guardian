@@ -43,6 +43,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if target.AutoCert && h.IsHTTPPortListener {
+		fmt.Println("AutoCert in progress")
 		CertManagerHTTPHandler.ServeHTTP(w, r)
 		return
 	}
