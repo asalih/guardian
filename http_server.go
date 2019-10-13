@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -95,6 +96,10 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 			return certManager.GetCertificate(clientHello)
 		}
 
+		if !target.CertCrt.Valid && !target.CertKey.Valid {
+			return nil, errors.New("Certification is not enabled.")
+		}
+
 		cert, errl := h.loadCertificates(target)
 
 		if errl != nil {
@@ -105,5 +110,5 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 }
 
 func (h HTTPServer) loadCertificates(target *models.Target) (tls.Certificate, error) {
-	return tls.X509KeyPair([]byte(target.CertCrt), []byte(target.CertKey))
+	return tls.X509KeyPair([]byte(target.CertCrt.String), []byte(target.CertKey.String))
 }
