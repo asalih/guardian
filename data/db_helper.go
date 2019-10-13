@@ -19,15 +19,17 @@ type DBHelper struct {
 
 /*GetTarget Reads the Target from database*/
 func (h *DBHelper) GetTarget(domain string) *models.Target {
-	target := GetTarget(domain)
+	target := h.getTarget(domain)
 
 	if target == nil {
-		if strings.HasPrefix("www.") == nil {
-			return h.getTarget(strings.Replace(domain, "www.", ""))
+		if strings.HasPrefix(domain, "www.") {
+			return h.getTarget(strings.ReplaceAll(domain, "www.", ""))
 		} else {
 			return h.getTarget("www." + domain)
 		}
 	}
+
+	return target
 }
 
 func (h *DBHelper) getTarget(domain string) *models.Target {
