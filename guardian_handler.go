@@ -40,13 +40,13 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if target == nil {
 		fmt.Fprintf(w, "Your application not authorized yet! Check your implementation. %s", r.URL.Path)
-		fmt.Println("Unauthorized Application requested." + r.URL.Host)
+		fmt.Println("Unauthorized Application requested." + r.Host)
 
 		return
 	}
 
 	if target.AutoCert && h.IsHTTPPortListener {
-		fmt.Println("AutoCert in progress")
+		fmt.Println("AutoCert in progress. " + r.Host + r.URL.Path)
 		CertManagerHTTPHandler.ServeHTTP(w, r)
 		return
 	}
