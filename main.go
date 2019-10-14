@@ -10,7 +10,7 @@ func main() {
 	models.InitRequestPayloadDataCollection()
 	models.InitResponsePayloadDataCollection()
 
-	srv := &HTTPServer{}
+	srv := NewHTTPServer()
 
 	srv.ServeHTTP()
 }
