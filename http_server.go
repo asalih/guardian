@@ -24,7 +24,7 @@ var CertManager = autocert.Manager{
 	HostPolicy: autocert.HostWhitelist("guardsparker.com"),
 }
 
-var CertManagerHTTPHandler = CertManager.HTTPHandler(nil)
+//var CertManagerHTTPHandler =
 
 /*NewHTTPServer HTTP server initializer*/
 func NewHTTPServer() *HTTPServer {
@@ -38,13 +38,13 @@ func (h HTTPServer) ServeHTTP() {
 		ReadHeaderTimeout: 20 * time.Second,
 		WriteTimeout:      2 * time.Minute,
 		ReadTimeout:       1 * time.Minute,
-		Handler:           NewGuardianHandler(true),
+		Handler:           CertManager.HTTPHandler(nil),
 		Addr:              ":80",
 	}
 
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: false,
-		GetCertificate:     h.certificateManager(),
+		GetCertificate:     CertManager.GetCertificate,
 		CipherSuites: []uint16{
 			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
