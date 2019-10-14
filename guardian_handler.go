@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"time"
 
+	"golang.org/x/crypto/acme/autocert"
+
 	"github.com/asalih/guardian/response"
 
 	"github.com/asalih/guardian/data"
@@ -26,11 +28,12 @@ var dialer = &net.Dialer{
 type GuardianHandler struct {
 	DB                 *data.DBHelper
 	IsHTTPPortListener bool
+	CertManager        *autocert.Manager
 }
 
 /*NewGuardianHandler Https Guardian handler init*/
-func NewGuardianHandler(isHTTPPortListener bool) *GuardianHandler {
-	return &GuardianHandler{&data.DBHelper{}, isHTTPPortListener}
+func NewGuardianHandler(isHTTPPortListener bool, certManager *autocert.Manager) *GuardianHandler {
+	return &GuardianHandler{&data.DBHelper{}, isHTTPPortListener, certManager}
 }
 
 func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +50,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if target.AutoCert && h.IsHTTPPortListener {
 		fmt.Println("AutoCert in progress. " + r.Host + r.URL.Path)
-		//		CertManagerHTTPHandler.ServeHTTP(w, r)
+		h.CertManager.HTTPHandler(nil).ServeHTTP(w, r)
 		return
 	}
 
