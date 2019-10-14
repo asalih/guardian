@@ -23,20 +23,19 @@ type HTTPServer struct {
 /*NewHTTPServer HTTP server initializer*/
 func NewHTTPServer() *HTTPServer {
 	return &HTTPServer{&data.DBHelper{}, &autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		Cache:      autocert.DirCache("cert-cache"),
-		HostPolicy: autocert.HostWhitelist("guardsparker.com", "www.guardsparker.com"),
+		Prompt: autocert.AcceptTOS,
+		Cache:  autocert.DirCache("cert-cache"),
 	}}
 }
 
 func (h HTTPServer) ServeHTTP() {
 
 	srv80 := &http.Server{
-		//ReadHeaderTimeout: 20 * time.Second,
-		//WriteTimeout:      2 * time.Minute,
-		//ReadTimeout:       1 * time.Minute,
-		Handler: NewGuardianHandler(true, h.AutoCertManager),
-		Addr:    ":http",
+		ReadHeaderTimeout: 20 * time.Second,
+		WriteTimeout:      2 * time.Minute,
+		ReadTimeout:       1 * time.Minute,
+		Handler:           NewGuardianHandler(true, h.AutoCertManager),
+		Addr:              ":http",
 	}
 
 	tlsConfig := &tls.Config{
@@ -44,12 +43,12 @@ func (h HTTPServer) ServeHTTP() {
 	}
 
 	srv := &http.Server{
-		//ReadHeaderTimeout: 40 * time.Second,
-		//WriteTimeout:      2 * time.Minute,
-		//ReadTimeout:       2 * time.Minute,
-		Handler:   NewGuardianHandler(false, h.AutoCertManager),
-		Addr:      ":https",
-		TLSConfig: tlsConfig,
+		ReadHeaderTimeout: 40 * time.Second,
+		WriteTimeout:      2 * time.Minute,
+		ReadTimeout:       2 * time.Minute,
+		Handler:           NewGuardianHandler(false, h.AutoCertManager),
+		Addr:              ":https",
+		TLSConfig:         tlsConfig,
 	}
 
 	go srv80.ListenAndServe()
