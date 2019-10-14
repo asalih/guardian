@@ -18,10 +18,10 @@ type HTTPServer struct {
 	DB *data.DBHelper
 }
 
-var CertManager = autocert.Manager{
+var CertManager = &autocert.Manager{
 	Prompt:     autocert.AcceptTOS,
 	Cache:      autocert.DirCache("certs"),
-	HostPolicy: autocert.HostWhitelist("guardsparker.com"),
+	HostPolicy: autocert.HostWhitelist("guardsparker.com", "www.guardsparker.com"),
 }
 
 //var CertManagerHTTPHandler =
@@ -39,7 +39,7 @@ func (h HTTPServer) ServeHTTP() {
 		WriteTimeout:      2 * time.Minute,
 		ReadTimeout:       1 * time.Minute,
 		Handler:           CertManager.HTTPHandler(nil),
-		Addr:              ":80",
+		Addr:              ":http",
 	}
 
 	tlsConfig := &tls.Config{
@@ -68,11 +68,11 @@ func (h HTTPServer) ServeHTTP() {
 	}
 
 	srv := &http.Server{
-		ReadHeaderTimeout: 20 * time.Second,
+		ReadHeaderTimeout: 40 * time.Second,
 		WriteTimeout:      2 * time.Minute,
-		ReadTimeout:       1 * time.Minute,
+		ReadTimeout:       2 * time.Minute,
 		Handler:           NewGuardianHandler(false),
-		Addr:              ":443",
+		Addr:              ":https",
 		TLSConfig:         tlsConfig,
 	}
 
