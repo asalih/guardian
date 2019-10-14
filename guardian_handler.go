@@ -43,7 +43,8 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if target == nil {
 		fmt.Fprintf(w, "Your application not authorized yet! Check your implementation. %s", r.URL.Path)
-		fmt.Println("Unauthorized Application requested." + r.Host)
+		fmt.Println("Unauthorized Application requested." + r.Host + r.URL.Path)
+		fmt.Println(r)
 
 		return
 	}
