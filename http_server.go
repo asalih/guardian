@@ -14,8 +14,8 @@ import (
 
 /*HTTPServer The http server handler*/
 type HTTPServer struct {
-	DB          *data.DBHelper
-	CertManager *autocert.Manager
+	DB              *data.DBHelper
+	AutoCertManager *autocert.Manager
 }
 
 //var CertManagerHTTPHandler =
@@ -35,19 +35,19 @@ func (h HTTPServer) ServeHTTP() {
 		//ReadHeaderTimeout: 20 * time.Second,
 		//WriteTimeout:      2 * time.Minute,
 		//ReadTimeout:       1 * time.Minute,
-		Handler: NewGuardianHandler(true, h.CertManager),
+		Handler: NewGuardianHandler(true, h.AutoCertManager),
 		Addr:    ":http",
 	}
 
 	tlsConfig := &tls.Config{
-		GetCertificate: h.CertManager.GetCertificate,
+		GetCertificate: h.certificateManager(),
 	}
 
 	srv := &http.Server{
 		//ReadHeaderTimeout: 40 * time.Second,
 		//WriteTimeout:      2 * time.Minute,
 		//ReadTimeout:       2 * time.Minute,
-		Handler:   NewGuardianHandler(false, h.CertManager),
+		Handler:   NewGuardianHandler(false, h.AutoCertManager),
 		Addr:      ":https",
 		TLSConfig: tlsConfig,
 	}
@@ -74,7 +74,7 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 
 		if target.AutoCert {
 			fmt.Println("AutoCert GetCertificate triggered.")
-			leCert, lerr := h.CertManager.GetCertificate(clientHello)
+			leCert, lerr := h.AutoCertManager.GetCertificate(clientHello)
 
 			fmt.Println(leCert)
 			fmt.Println(lerr)

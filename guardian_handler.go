@@ -37,7 +37,7 @@ func NewGuardianHandler(isHTTPPortListener bool, certManager *autocert.Manager) 
 }
 
 func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Guardian Handler Executing: " + r.Host)
+	fmt.Println("Guardian Handler Executing: " + r.Host + r.URL.Path)
 
 	target := h.DB.GetTarget(r.Host)
 
