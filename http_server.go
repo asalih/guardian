@@ -73,13 +73,7 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 		}
 
 		if target.AutoCert {
-			fmt.Println("AutoCert GetCertificate triggered.")
-			leCert, lerr := h.AutoCertManager.GetCertificate(clientHello)
-
-			fmt.Println(leCert)
-			fmt.Println(lerr)
-
-			return leCert, lerr
+			return h.AutoCertManager.GetCertificate(clientHello)
 		}
 
 		if !target.CertCrt.Valid && !target.CertKey.Valid {
