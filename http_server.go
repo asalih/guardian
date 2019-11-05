@@ -27,7 +27,6 @@ func NewHTTPServer() *HTTPServer {
 }
 
 func (h HTTPServer) ServeHTTP() {
-
 	srv80 := &http.Server{
 		ReadHeaderTimeout: 20 * time.Second,
 		WriteTimeout:      2 * time.Minute,

@@ -306,8 +306,6 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 
 	r.Request.Body = ioutil.NopCloser(bytes.NewBuffer(r.requestTransfer.BodyBuffer))
 
-	fmt.Println("Form check is on")
-	fmt.Println(params)
 	for key, values := range params {
 
 		for _, p := range payloads {
