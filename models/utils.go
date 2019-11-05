@@ -11,7 +11,7 @@ import (
 
 //IsMatch checks for matching string
 func IsMatch(pattern string, str string) (bool, error) {
-	return := regexp.MatchString(pattern, str)
+	return regexp.MatchString(pattern, str)
 }
 
 //UnEscapeRawValue unescapes raw query
