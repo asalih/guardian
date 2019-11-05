@@ -15,15 +15,12 @@ import (
 
 /*HTTPServer The http server handler*/
 type HTTPServer struct {
-	DB              *data.DBHelper
 	AutoCertManager *autocert.Manager
 }
 
-//var CertManagerHTTPHandler =
-
 /*NewHTTPServer HTTP server initializer*/
 func NewHTTPServer() *HTTPServer {
-	return &HTTPServer{&data.DBHelper{}, &autocert.Manager{
+	return &HTTPServer{&autocert.Manager{
 		Prompt: autocert.AcceptTOS,
 		Cache:  autocert.DirCache("cert-cache"),
 	}}
@@ -65,7 +62,7 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 		}
 
 		fmt.Println("Incoming TLS request:" + clientHello.ServerName)
-		target := h.DB.GetTarget(clientHello.ServerName)
+		target := data.NewDBHelper().GetTarget(clientHello.ServerName)
 
 		if target == nil {
 			fmt.Println("Incoming TLS request: Target nil")
@@ -77,7 +74,7 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 		}
 
 		if !target.CertCrt.Valid && !target.CertKey.Valid {
-			return nil, errors.New("Certification is not enabled.")
+			return nil, errors.New("CERTIFICATION IS NOT ENABLED")
 		}
 
 		cert, errl := h.loadCertificates(target)

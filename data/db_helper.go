@@ -17,6 +17,11 @@ import (
 type DBHelper struct {
 }
 
+/*NewDBHelper Inits new db helper*/
+func NewDBHelper() *DBHelper {
+	return new(DBHelper)
+}
+
 /*GetTarget Reads the Target from database*/
 func (h *DBHelper) GetTarget(domain string) *models.Target {
 	target := h.getTarget(domain)

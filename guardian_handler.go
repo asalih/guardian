@@ -26,20 +26,21 @@ var dialer = &net.Dialer{
 
 /*GuardianHandler Guardian HTTPS Handler is the transport handler*/
 type GuardianHandler struct {
-	DB                 *data.DBHelper
 	IsHTTPPortListener bool
 	CertManager        *autocert.Manager
 }
 
 /*NewGuardianHandler Https Guardian handler init*/
 func NewGuardianHandler(isHTTPPortListener bool, certManager *autocert.Manager) *GuardianHandler {
-	return &GuardianHandler{&data.DBHelper{}, isHTTPPortListener, certManager}
+	return &GuardianHandler{isHTTPPortListener, certManager}
 }
 
 func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Guardian Handler Executing: " + r.Host + r.URL.Path)
 
-	target := h.DB.GetTarget(r.Host)
+	DB := data.NewDBHelper()
+
+	target := DB.GetTarget(r.Host)
 
 	if target == nil {
 		fmt.Fprintf(w, "Your application not authorized yet! Check your implementation. %s", r.URL.Path)
@@ -179,7 +180,7 @@ func (h GuardianHandler) transformResponse(incomingWriter http.ResponseWriter, i
 }
 
 func (h GuardianHandler) logHTTPRequest(log *models.HTTPLog) {
-	h.DB.LogHTTPRequest(log)
+	data.NewDBHelper().LogHTTPRequest(log)
 }
 
 func (h GuardianHandler) getForwardIP(incomingRequest *http.Request) string {
