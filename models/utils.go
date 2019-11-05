@@ -13,7 +13,7 @@ import (
 func IsMatch(pattern string, str string) (bool, error) {
 
 	matched, _ := regexp.MatchString(pattern, str)
-	fmt.Printf("%s || %s || %s\n", pattern, str, matched)
+	//fmt.Printf("%s || %s || %s\n", pattern, str, matched)
 	return matched, nil
 }
 
