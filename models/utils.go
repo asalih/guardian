@@ -11,7 +11,10 @@ import (
 
 //IsMatch checks for matching string
 func IsMatch(pattern string, str string) (bool, error) {
-	return regexp.MatchString(pattern, str)
+
+	matched, _ := regexp.MatchString(pattern, str)
+	fmt.Printf("%s || %s || %s\n", pattern, str, matched)
+	return matched, nil
 }
 
 //UnEscapeRawValue unescapes raw query

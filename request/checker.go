@@ -305,6 +305,9 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 	params := r.Request.Form
 
 	r.Request.Body = ioutil.NopCloser(bytes.NewBuffer(r.requestTransfer.BodyBuffer))
+
+	fmt.Println("Form check is on")
+	fmt.Println(params)
 	for key, values := range params {
 
 		for _, p := range payloads {
@@ -313,34 +316,29 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 			if isMatch {
 				return models.NewMatchResult(true).Append(&p).Time(r.time)
 			}
-		}
 
-		for _, value := range values {
-			if isDigit, err := models.IsMatch(`^\d{1,5}$`, value); err == nil {
-				if isDigit {
-					continue
+			for _, value := range values {
+				if isDigit, err := models.IsMatch(`^\d{1,5}$`, value); err == nil {
+					if isDigit {
+						continue
+					}
 				}
-			}
-			// ChkPoint_ValueLength
-			// TODO: Check length
-			// valueLength := strconv.Itoa(len(value))
-			// matched, policy = IsMatchGroupPolicy(ctxMap, appID, valueLength, models.ChkPointValueLength, "", false)
-			// if matched == true {
-			// 	return matched, policy
-			// }
-			// ChkPoint_GetPostValue
+				// ChkPoint_ValueLength
+				// TODO: Check length
+				// valueLength := strconv.Itoa(len(value))
+				// matched, policy = IsMatchGroupPolicy(ctxMap, appID, valueLength, models.ChkPointValueLength, "", false)
+				// if matched == true {
+				// 	return matched, policy
+				// }
+				// ChkPoint_GetPostValue
 
-			for _, p := range payloads {
 				isMatch, _ := models.IsMatch(p.Payload, value)
 
 				if isMatch {
 					return models.NewMatchResult(true).Append(&p).Time(r.time)
 				}
 			}
-
-			return models.NewMatchResult(false)
 		}
-
 	}
 
 	return models.NewMatchResult(false)

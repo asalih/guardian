@@ -36,7 +36,7 @@ func NewGuardianHandler(isHTTPPortListener bool, certManager *autocert.Manager) 
 }
 
 func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Guardian Handler Executing: " + r.Host + r.URL.Path)
+	//fmt.Println("Guardian Handler Executing: " + r.Host + r.URL.Path)
 
 	DB := data.NewDBHelper()
 
@@ -69,7 +69,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpLog := models.NewHTTPLog()
-
+	fmt.Println("Guardian Handler Executing: " + r.Host + r.URL.Path)
 	requestIsNotSafe := request.NewRequestChecker(w, r, target).Handle()
 
 	httpLog = httpLog.RequestRulesExecutionEnd()
