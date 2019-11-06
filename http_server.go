@@ -37,7 +37,7 @@ func (h HTTPServer) ServeHTTP() {
 
 	tlsConfig := &tls.Config{
 		MinVersion:               tls.VersionTLS12,
-		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256, tls.CurveID},
+		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
 		PreferServerCipherSuites: true,
 		GetCertificate:           h.certificateManager(),
 		CipherSuites: []uint16{
