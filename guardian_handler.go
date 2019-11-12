@@ -28,15 +28,27 @@ var dialer = &net.Dialer{
 type GuardianHandler struct {
 	IsHTTPPortListener bool
 	CertManager        *autocert.Manager
+	IPRateLimiter      *models.IPRateLimiter
 }
 
 /*NewGuardianHandler Https Guardian handler init*/
-func NewGuardianHandler(isHTTPPortListener bool, certManager *autocert.Manager) *GuardianHandler {
-	return &GuardianHandler{isHTTPPortListener, certManager}
+func NewGuardianHandler(isHTTPPortListener bool, certManager *autocert.Manager, ipRateLimiter *models.IPRateLimiter) *GuardianHandler {
+	return &GuardianHandler{isHTTPPortListener, certManager, ipRateLimiter}
 }
 
 func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	DB := data.NewDBHelper()
+
+	ipAddress := h.getIPAddress(r)
+
+	if !h.IPRateLimiter.IsAllowed(ipAddress) {
+		w.WriteHeader(http.StatusTooManyRequests)
+		fmt.Fprintf(w, "Too Many Requests. %s", r.URL.Path)
+
+		go DB.LogThrottleRequest(ipAddress)
+
+		return
+	}
 
 	target := DB.GetTarget(r.Host)
 
@@ -153,7 +165,7 @@ func (h GuardianHandler) transportRequest(uriToReq string,
 		req.Header.Set(name, value[0])
 	}
 
-	fwIP := h.getForwardIP(incomingRequest)
+	fwIP := h.getIPAddress(incomingRequest)
 	if fwIP != "" {
 		req.Header.Set("X-Forwarded-For", fwIP)
 	}
@@ -181,15 +193,21 @@ func (h GuardianHandler) logHTTPRequest(log *models.HTTPLog) {
 	data.NewDBHelper().LogHTTPRequest(log)
 }
 
-func (h GuardianHandler) getForwardIP(incomingRequest *http.Request) string {
+func (h GuardianHandler) getIPAddress(incomingRequest *http.Request) string {
 
-	ipAddress := incomingRequest.Header.Get("X-Real-Ip")
-	if ipAddress == "" {
-		ipAddress = incomingRequest.Header.Get("X-Forwarded-For")
-	}
-	if ipAddress == "" {
-		ipAddress = incomingRequest.RemoteAddr
-	}
+	//TODO: IP forwarding must be enabled for the target
+	/*
+		ipAddress := incomingRequest.Header.Get("X-Real-Ip")
+		if ipAddress == "" {
+			ipAddress = incomingRequest.Header.Get("X-Forwarded-For")
+		}
+		if ipAddress == "" {
+			ipAddress = incomingRequest.RemoteAddr
+		}
 
-	return ipAddress
+		return ipAddress
+	*/
+
+	return incomingRequest.RemoteAddr
+
 }

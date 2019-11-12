@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"golang.org/x/time/rate"
+
 	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/models"
 
@@ -16,6 +18,7 @@ import (
 /*HTTPServer The http server handler*/
 type HTTPServer struct {
 	AutoCertManager *autocert.Manager
+	IPRateLimiter   *models.IPRateLimiter
 }
 
 /*NewHTTPServer HTTP server initializer*/
@@ -23,7 +26,9 @@ func NewHTTPServer() *HTTPServer {
 	return &HTTPServer{&autocert.Manager{
 		Prompt: autocert.AcceptTOS,
 		Cache:  autocert.DirCache("cert-cache"),
-	}}
+	},
+		models.NewIPRateLimiter(rate.Limit(models.Configuration.RateLimitSec),
+			models.Configuration.RateLimitBurst)}
 }
 
 func (h HTTPServer) ServeHTTP() {
@@ -31,7 +36,7 @@ func (h HTTPServer) ServeHTTP() {
 		ReadHeaderTimeout: 20 * time.Second,
 		WriteTimeout:      2 * time.Minute,
 		ReadTimeout:       1 * time.Minute,
-		Handler:           NewGuardianHandler(true, h.AutoCertManager),
+		Handler:           NewGuardianHandler(true, h.AutoCertManager, h.IPRateLimiter),
 		Addr:              ":http",
 	}
 
@@ -60,7 +65,7 @@ func (h HTTPServer) ServeHTTP() {
 		ReadHeaderTimeout: 40 * time.Second,
 		WriteTimeout:      2 * time.Minute,
 		ReadTimeout:       2 * time.Minute,
-		Handler:           NewGuardianHandler(false, h.AutoCertManager),
+		Handler:           NewGuardianHandler(false, h.AutoCertManager, h.IPRateLimiter),
 		Addr:              ":https",
 		TLSConfig:         tlsConfig,
 	}
@@ -77,8 +82,17 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 			return nil, err
 		}
 
+		DB := data.NewDBHelper()
+
+		ipAddress := clientHello.Conn.RemoteAddr().String()
+		if !h.IPRateLimiter.IsAllowed(ipAddress) {
+			go DB.LogThrottleRequest(ipAddress)
+
+			return nil, err
+		}
+
 		fmt.Println("Incoming TLS request:" + clientHello.ServerName)
-		target := data.NewDBHelper().GetTarget(clientHello.ServerName)
+		target := DB.GetTarget(clientHello.ServerName)
 
 		if target == nil {
 			fmt.Println("Incoming TLS request: Target nil")

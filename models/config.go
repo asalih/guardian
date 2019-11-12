@@ -10,6 +10,8 @@ import (
 //Config Application settings
 type Config struct {
 	ConnectionString string `json:"connectionString"`
+	RateLimitSec     int    `json:"rateLimitSec"`
+	RateLimitBurst   int    `json:"rateLimitBurst"`
 }
 
 //Configuration ...
