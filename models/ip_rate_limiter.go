@@ -80,12 +80,14 @@ func (i *IPRateLimiter) GetLimiter(ip string) *rate.Limiter {
 	return limiter.rateLimiter
 }
 
+//GetLimiterIP splits given address and returns the limiter belongs to that ip address.
 func (i *IPRateLimiter) GetLimiterIP(ip string) *rate.Limiter {
 	ipAddress := strings.Split(ip, ":")[0]
 
 	return i.GetLimiter(ipAddress)
 }
 
+//IsAllowed splits given ip string and checks is ip address allowed to go
 func (i *IPRateLimiter) IsAllowed(ip string) bool {
 	ipAddress := strings.Split(ip, ":")[0]
 
