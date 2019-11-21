@@ -1,6 +1,10 @@
 package models
 
-import "testing"
+import (
+	"net/http"
+	"testing"
+	"time"
+)
 
 func TestIsMatchWithValues(t *testing.T) {
 	testDataMap := map[string]map[string]interface{}{
@@ -29,16 +33,104 @@ func TestIsMatchWithValues(t *testing.T) {
 
 }
 
-/*func TestUnEscapeRawValue(t *testing.T) {
-	testData := make(map[string]string)
-	testData["?q=1&a=<script>alert(1)</script>"] = ""
+func TestUnEscapeRawValue(t *testing.T) {
+	testDataMap := map[string]map[string]interface{}{
+		"MATCH1": {"pattern": "%%", "expect": "%%"},
+		"MATCH2": {"pattern": "%'", "expect": "%"},
+		"MATCH3": {"pattern": `%"`, "expect": `%`},
+		"EMPTY":  {"pattern": "", "expect": ""},
+		"SPACE":  {"pattern": " ", "expect": " "},
+		"PLUS":   {"pattern": "+", "expect": " "},
+	}
 
-	result := UnEscapeRawValue("?q=1&a=<script>alert(1)</script>")
+	for _, testData := range testDataMap {
 
-	if result {
-		t.Log("UnEscapeRawValue(\"\", \"\") PASSED, expected true got true.")
-	} else {
-		t.Error("IsMatch(\"\", \"\") FAILED, expected true got true.")
+		result := UnEscapeRawValue(testData["pattern"].(string))
+
+		if result == testData["expect"].(string) {
+			t.Logf("UnEscapeRawValue(\"%v\") PASSED, expected %v got %v.",
+				testData["pattern"], testData["expect"], result)
+		} else {
+			t.Errorf("UnEscapeRawValue(\"%v\") FAILED, expected %v got %v.",
+				testData["pattern"], testData["expect"], result)
+		}
 	}
 }
-*/
+
+func TestPreProcessString(t *testing.T) {
+	testDataMap := map[string]map[string]interface{}{
+		"MATCH1": {"pattern": `'`, "expect": ``},
+		"MATCH2": {"pattern": `"`, "expect": ``},
+		"MATCH3": {"pattern": `/**/`, "expect": ` `},
+		"MATCH4": {"pattern": `+`, "expect": ` `},
+		"EMPTY":  {"pattern": "", "expect": ""},
+		"SPACE":  {"pattern": " ", "expect": " "},
+	}
+
+	for _, testData := range testDataMap {
+
+		result := PreProcessString(testData["pattern"].(string))
+
+		if result == testData["expect"].(string) {
+			t.Logf("PreProcessString(\"%v\") PASSED, expected %v got %v.",
+				testData["pattern"], testData["expect"], result)
+		} else {
+			t.Errorf("PreProcessString(\"%v\") FAILED, expected %v got %v.",
+				testData["pattern"], testData["expect"], result)
+		}
+	}
+}
+
+func TestHeadersToString(t *testing.T) {
+	req, _ := http.NewRequest("GET", "www.netsparker.com", nil)
+
+	req.Header.Add("Content-Type", "application/json")
+
+	expect := "Content-Type: application/json "
+
+	result := HeadersToString(req.Header)
+
+	if result == expect {
+		t.Logf("HeadersToString(\"%v\") PASSED, expected %v got %v.",
+			req.Header, expect, result)
+	} else {
+		t.Errorf("PreProcessString(\"%v\") FAILED, expected %v got %v.",
+			req.Header, expect, result)
+	}
+}
+
+func TestCookiesToString(t *testing.T) {
+	req, _ := http.NewRequest("GET", "www.netsparker.com", nil)
+
+	req.AddCookie(&http.Cookie{Name: "cookie1", Value: "c1"})
+	req.AddCookie(&http.Cookie{Name: "cookie2", Value: "c2"})
+
+	expect := "cookie1=c1 cookie2=c2 "
+
+	result := CookiesToString(req.Cookies())
+
+	if result == expect {
+		t.Logf("CookiesToString(\"%v\") PASSED, expected %v got %v.",
+			req.Cookies(), expect, result)
+	} else {
+		t.Errorf("CookiesToString(\"%v\") FAILED, expected %v got %v.",
+			req.Cookies(), expect, result)
+	}
+}
+
+func TestCalcTime(t *testing.T) {
+	start := time.Now()
+
+	time.Sleep(1 * time.Second)
+
+	result := CalcTime(start)
+	expect := int64(1000)
+
+	if result >= expect {
+		t.Logf("CalcTime(\"%v\") PASSED, expected %v got %v.",
+			start, expect, result)
+	} else {
+		t.Errorf("CalcTime(\"%v\") FAILED, expected %v got %v.",
+			start, expect, result)
+	}
+}

@@ -41,7 +41,7 @@ func PreProcessString(value string) string {
 func HeadersToString(header http.Header) (res string) {
 	for name, values := range header {
 		for _, value := range values {
-			res += fmt.Sprintf("%s: %s", name, value)
+			res += fmt.Sprintf("%s: %s ", name, value)
 		}
 	}
 	return
