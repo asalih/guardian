@@ -2,7 +2,6 @@ package models
 
 import (
 	"net/http"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -12,11 +11,15 @@ func TestNewHTTPLog(t *testing.T) {
 		name string
 		want *HTTPLog
 	}{
-		{"Init", &HTTPLog{"", "", 0, 0, 0, 0, 0, 0, time.Now()}},
+		{"Init", &HTTPLog{"ID", "example.com", 0, 0, 0, 0, 0, 0, time.Now()}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewHTTPLog(); !reflect.DeepEqual(got, tt.want) {
+			got := NewHTTPLog()
+			got.TargetID = "ID"
+			got.RequestURI = "example.com"
+
+			if got.TargetID != tt.want.TargetID || got.RequestURI != tt.want.RequestURI {
 				t.Errorf("NewHTTPLog() = %v, want %v", got, tt.want)
 			}
 		})
@@ -31,8 +34,14 @@ func TestHTTPLog_Build(t *testing.T) {
 	}
 
 	refHTTP := NewHTTPLog()
+	refHTTP.TargetID = "ID"
+	refHTTP.RequestURI = "www.netsparker.com"
+
 	refRequest, _ := http.NewRequest("GET", "www.netsparker.com", nil)
+	refRequest.RequestURI = "www.netsparker.com"
 	target := new(Target)
+	target.ID = "ID"
+	target.Domain = "www.netsparker.com"
 
 	tests := []struct {
 		name string
@@ -40,11 +49,13 @@ func TestHTTPLog_Build(t *testing.T) {
 		args args
 		want *HTTPLog
 	}{
-		{"Build", HTTPLog{"", "", 0, 0, 0, 0, 0, 0, time.Now()}, args{target, refRequest, nil}, refHTTP},
+		{"Build", HTTPLog{"ID", "www.netsparker.com", 0, 0, 0, 0, 0, 0, time.Now()}, args{target, refRequest, nil}, refHTTP},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.h.Build(tt.args.target, tt.args.request, tt.args.response); !reflect.DeepEqual(got, tt.want) {
+			got := tt.h.Build(tt.args.target, tt.args.request, tt.args.response)
+
+			if got.TargetID != tt.want.TargetID || got.RequestURI != tt.want.RequestURI {
 				t.Errorf("HTTPLog.Build() = %v, want %v", got, tt.want)
 			}
 		})
