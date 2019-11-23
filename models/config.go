@@ -17,9 +17,13 @@ type Config struct {
 //Configuration ...
 var Configuration Config
 
-//InitConfig initializes the config file
+//InitConfig ...
 func InitConfig() {
-	cnfFile := "appsettings"
+	InitConfigFile("appsettings")
+}
+
+//InitConfigFile initializes the config file
+func InitConfigFile(cnfFile string) {
 
 	guardianEnv := os.Getenv("GUARDIAN_ENV")
 
@@ -36,6 +40,6 @@ func InitConfig() {
 	jerr := json.Unmarshal(jsonFile, &Configuration)
 
 	if err != nil || jerr != nil {
-		panic("Configuration file error. " + cnfFile)
+		panic(err)
 	}
 }

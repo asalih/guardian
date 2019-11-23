@@ -35,7 +35,12 @@ type PayloadData struct {
 
 //InitRequestPayloadDataCollection Payload data initializer
 func InitRequestPayloadDataCollection() {
-	jsonFile, err := ioutil.ReadFile("requestPayloads.json")
+	InitRequestPayloadDataCollectionFile("requestPayloads.json")
+}
+
+//InitRequestPayloadDataCollectionFile Payload data initializer
+func InitRequestPayloadDataCollectionFile(path string) {
+	jsonFile, err := ioutil.ReadFile(path)
 
 	if err != nil {
 		panic(err)
@@ -55,9 +60,14 @@ func InitRequestPayloadDataCollection() {
 	LenOfGroupedRequestPayloadDataCollection = len(RequestCheckPointPayloadData)
 }
 
-//InitResponsePayloadDataCollection Payload data initializer
+//InitResponsePayloadDataCollectionFile Payload data initializer
 func InitResponsePayloadDataCollection() {
-	jsonFile, err := ioutil.ReadFile("responsePayloads.json")
+	InitResponsePayloadDataCollectionFile("responsePayloads.json")
+}
+
+//InitResponsePayloadDataCollectionFile Payload data initializer
+func InitResponsePayloadDataCollectionFile(path string) {
+	jsonFile, err := ioutil.ReadFile(path)
 
 	if err != nil {
 		panic(err)
