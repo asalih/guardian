@@ -60,7 +60,7 @@ func InitRequestPayloadDataCollectionFile(path string) {
 	LenOfGroupedRequestPayloadDataCollection = len(RequestCheckPointPayloadData)
 }
 
-//InitResponsePayloadDataCollectionFile Payload data initializer
+//InitResponsePayloadDataCollection Payload data initializer
 func InitResponsePayloadDataCollection() {
 	InitResponsePayloadDataCollectionFile("responsePayloads.json")
 }

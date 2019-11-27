@@ -1,12 +1,10 @@
 package request
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"mime"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
@@ -19,25 +17,21 @@ import (
 
 	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/models"
+	"github.com/asalih/guardian/names"
 )
 
 var staticSuffix = []string{".js", ".css", ".png", ".jpg", ".gif", ".bmp", ".svg", ".ico"}
 
 /*Checker Cheks the requests init*/
 type Checker struct {
-	ResponseWriter http.ResponseWriter
-	Request        *http.Request
-	Target         *models.Target
+	ResponseWriter  http.ResponseWriter
+	Request         *http.Request
+	Target          *models.Target
+	RequestTransfer RequestTransfer
 
-	requestTransfer *requestTransfer
-	result          chan *models.MatchResult
-	firewallResult  chan *models.FirewallMatchResult
-	time            time.Time
-}
-
-type requestTransfer struct {
-	BodyBuffer  []byte
-	ContentType string
+	result         chan *models.MatchResult
+	firewallResult chan *models.FirewallMatchResult
+	time           time.Time
 }
 
 /*NewRequestChecker Request checker initializer*/
@@ -52,17 +46,15 @@ func (r Checker) Handle() bool {
 		return false
 	}
 
-	bodyBuffer, _ := ioutil.ReadAll(r.Request.Body)
-	r.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBuffer))
-	r.requestTransfer = &requestTransfer{bodyBuffer, r.Request.Header.Get("Content-Type")}
-
+	r.RequestTransfer = NewRequestTransfer(r.Request)
 	result := r.handleWAFChecker()
 
 	if result {
 		return result
 	}
 
-	return r.handleFirewallRuleChecker()
+	return result
+	//return r.handleFirewallRuleChecker()
 }
 
 // IsStaticResource ...
@@ -223,7 +215,7 @@ func (r Checker) handlePayload(key string, payloads []models.PayloadData, wg *sy
 
 func (r Checker) handleQuery(payloads []models.PayloadData) *models.MatchResult {
 	for _, p := range payloads {
-		isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(r.Request.URL.RawQuery))
+		isMatch, _ := models.IsMatch(p.Payload, r.RequestTransfer.Get(names.QUERY_STRING))
 
 		if isMatch {
 			return models.NewMatchResult(true).Append(&p).Time(r.time)
@@ -235,7 +227,7 @@ func (r Checker) handleQuery(payloads []models.PayloadData) *models.MatchResult 
 
 func (r Checker) handlePath(payloads []models.PayloadData) *models.MatchResult {
 	for _, p := range payloads {
-		isMatch, _ := models.IsMatch(p.Payload, r.Request.URL.Path)
+		isMatch, _ := models.IsMatch(p.Payload, r.RequestTransfer.Get(names.REQUEST_BASENAME))
 
 		if isMatch {
 			return models.NewMatchResult(true).Append(&p).Time(r.time)
@@ -246,9 +238,8 @@ func (r Checker) handlePath(payloads []models.PayloadData) *models.MatchResult {
 }
 
 func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
-	mediaType, mediaParams, _ := mime.ParseMediaType(r.requestTransfer.ContentType)
 
-	if strings.HasPrefix(mediaType, "multipart/form-data") {
+	if strings.HasPrefix(r.RequestTransfer.Get(names.REQUEST_BODY_TYPE), "multipart/form-data") {
 		// ChkPoint_UploadFileExt
 		r.Request.ParseMultipartForm(1024)
 		if r.Request.MultipartForm != nil {
@@ -267,8 +258,7 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 			}
 
 			// Multipart Content
-			body1 := ioutil.NopCloser(bytes.NewBuffer(r.requestTransfer.BodyBuffer))
-			multiReader := multipart.NewReader(body1, mediaParams["boundary"])
+			multiReader := multipart.NewReader(r.Request.Body, r.RequestTransfer.Get(names.MULTIPART_BOUNDARY))
 			for {
 				p, err := multiReader.NextPart()
 				if err == io.EOF {
@@ -286,9 +276,11 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 			}
 		}
 
-	} else if strings.HasPrefix(mediaType, "application/json") {
+	} else if strings.HasPrefix(r.RequestTransfer.Get(names.REQUEST_BODY_TYPE), "application/json") {
 		var params interface{}
-		err := json.Unmarshal(r.requestTransfer.BodyBuffer, &params)
+
+		decoder := json.NewDecoder(r.Request.Body)
+		err := decoder.Decode(&params)
 
 		if err != nil {
 			panic(err)
@@ -303,8 +295,6 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 	}
 
 	params := r.Request.Form
-
-	r.Request.Body = ioutil.NopCloser(bytes.NewBuffer(r.requestTransfer.BodyBuffer))
 
 	for key, values := range params {
 

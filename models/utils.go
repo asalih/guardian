@@ -47,10 +47,25 @@ func HeadersToString(header http.Header) (res string) {
 	return
 }
 
+//Gets the header name
+func GetHeadersNames(header http.Header) (res []string) {
+	for name, _ := range header {
+		res = append(res, name)
+	}
+	return
+}
+
 //CookiesToString ...
 func CookiesToString(cookie []*http.Cookie) (res string) {
 	for _, values := range cookie {
 		res += fmt.Sprintf("%s=%s ", values.Name, values.Value)
+	}
+	return
+}
+
+func GetCookiesNames(cookie []*http.Cookie) (res []string) {
+	for _, values := range cookie {
+		res = append(res, values.Name)
 	}
 	return
 }
