@@ -27,29 +27,29 @@ func NewFirewallMatchResult(rule *FirewallRule, isMatched bool) *FirewallMatchRe
 }
 
 //Time calculates elapsed time
-func (m MatchResult) Time(now time.Time) *MatchResult {
+func (m *MatchResult) Time(now time.Time) *MatchResult {
 	m.Elapsed = CalcTime(now)
 
-	return &m
+	return m
 }
 
 //Append ...
-func (m MatchResult) Append(payload *PayloadData) *MatchResult {
+func (m *MatchResult) Append(payload *PayloadData) *MatchResult {
 	m.MatchedPayloads = append(m.MatchedPayloads, payload)
 
-	return &m
+	return m
 }
 
 //SetMatch ...
-func (m MatchResult) SetMatch(isMatched bool) *MatchResult {
+func (m *MatchResult) SetMatch(isMatched bool) *MatchResult {
 	m.IsMatched = isMatched
 
-	return &m
+	return m
 }
 
 //Time calculates elapsed time
-func (m FirewallMatchResult) Time(now time.Time) *FirewallMatchResult {
+func (m *FirewallMatchResult) Time(now time.Time) *FirewallMatchResult {
 	m.Elapsed = CalcTime(now)
 
-	return &m
+	return m
 }

@@ -1,4 +1,4 @@
-package names
+package variables
 
 var REQUEST_COOKIES = "REQUEST_COOKIES"
 var REQUEST_COOKIES_NAMES = "REQUEST_COOKIES_NAMES"

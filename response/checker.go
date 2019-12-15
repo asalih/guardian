@@ -20,7 +20,7 @@ type Checker struct {
 	Target         *models.Target
 
 	requestTransfer *responseTransfer
-	result          chan *models.MatchResult
+	result          []*models.MatchResult
 	firewallResult  chan *models.FirewallMatchResult
 	time            time.Time
 }
@@ -36,7 +36,7 @@ func NewResponseChecker(w http.ResponseWriter, r *http.Request, resp *http.Respo
 }
 
 /*Handle Request checker handler func*/
-func (r Checker) Handle() bool {
+func (r *Checker) Handle() bool {
 
 	if !r.Target.WAFEnabled {
 		return false
@@ -56,7 +56,7 @@ func (r Checker) Handle() bool {
 	return r.handleFirewallRuleChecker()
 }
 
-func (r Checker) handleFirewallRuleChecker() bool {
+func (r *Checker) handleFirewallRuleChecker() bool {
 	firewallChannel := make(chan bool, 1)
 	db := &data.DBHelper{}
 
@@ -126,7 +126,7 @@ func (r Checker) handleFirewallRuleChecker() bool {
 	return false
 }
 
-func (r Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules map[string]interface{}, wg *sync.WaitGroup) {
+func (r *Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules map[string]interface{}, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	evalResult, everr := gval.Evaluate(rule.Expression, mapForFwRules)
@@ -138,24 +138,15 @@ func (r Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules 
 	r.firewallResult <- models.NewFirewallMatchResult(rule, evalResult.(bool)).Time(r.time)
 }
 
-func (r Checker) handleWAFChecker() bool {
+func (r *Checker) handleWAFChecker() bool {
 
 	done := make(chan bool, 1)
 
 	go func() {
-		var wg sync.WaitGroup
-
-		r.result = make(chan *models.MatchResult, models.LenOfGroupedResponsePayloadDataCollection)
-
-		wg.Add(models.LenOfGroupedResponsePayloadDataCollection)
 
 		for key, payload := range models.ResponseCheckPointPayloadData {
-			go r.handlePayload(key, payload, &wg)
+			r.handlePayload(key, payload)
 		}
-
-		wg.Wait()
-
-		close(r.result)
 
 		done <- true
 	}()
@@ -166,7 +157,7 @@ func (r Checker) handleWAFChecker() bool {
 		panic("failed to execute rules.")
 	}
 
-	for i := range r.result {
+	for _, i := range r.result {
 		for _, m := range i.MatchedPayloads {
 			if i.IsMatched {
 				db := &data.DBHelper{}
@@ -189,18 +180,16 @@ func (r Checker) handleWAFChecker() bool {
 	return false
 }
 
-func (r Checker) handlePayload(key string, payloads []models.PayloadData, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (r *Checker) handlePayload(key string, payloads []models.PayloadData) {
 	switch key {
 	case "Header":
-		r.result <- r.handleHeader(payloads)
+		r.result = append(r.result, r.handleHeader(payloads))
 	}
 }
 
-func (r Checker) handleHeader(payloads []models.PayloadData) *models.MatchResult {
-
+func (r *Checker) handleHeader(payloads []models.PayloadData) *models.MatchResult {
 	matchResult := models.NewMatchResult(false)
+
 	for _, p := range payloads {
 		for hk, hv := range r.Response.Header {
 			isMatch, _ := models.IsMatch(p.Payload, hk+": "+hv[0])

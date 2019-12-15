@@ -17,7 +17,7 @@ import (
 
 	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/models"
-	"github.com/asalih/guardian/names"
+	"github.com/asalih/guardian/variables"
 )
 
 var staticSuffix = []string{".js", ".css", ".png", ".jpg", ".gif", ".bmp", ".svg", ".ico"}
@@ -27,9 +27,9 @@ type Checker struct {
 	ResponseWriter  http.ResponseWriter
 	Request         *http.Request
 	Target          *models.Target
-	RequestTransfer RequestTransfer
+	RequestTransfer *RequestTransfer
 
-	result         chan *models.MatchResult
+	result         []*models.MatchResult
 	firewallResult chan *models.FirewallMatchResult
 	time           time.Time
 }
@@ -40,7 +40,7 @@ func NewRequestChecker(w http.ResponseWriter, r *http.Request, target *models.Ta
 }
 
 /*Handle Request checker handler func*/
-func (r Checker) Handle() bool {
+func (r *Checker) Handle() bool {
 
 	if !r.Target.WAFEnabled || r.Request.Method == "GET" && r.IsStaticResource(r.Request.URL.Path) {
 		return false
@@ -53,12 +53,12 @@ func (r Checker) Handle() bool {
 		return result
 	}
 
-	return result
-	//return r.handleFirewallRuleChecker()
+	//return result
+	return r.handleFirewallRuleChecker()
 }
 
 // IsStaticResource ...
-func (r Checker) IsStaticResource(url string) bool {
+func (r *Checker) IsStaticResource(url string) bool {
 	if strings.Contains(url, "?") {
 		return false
 	}
@@ -70,7 +70,7 @@ func (r Checker) IsStaticResource(url string) bool {
 	return false
 }
 
-func (r Checker) handleFirewallRuleChecker() bool {
+func (r *Checker) handleFirewallRuleChecker() bool {
 	firewallChannel := make(chan bool, 1)
 	db := &data.DBHelper{}
 
@@ -133,24 +133,15 @@ func (r Checker) handleFirewallRuleChecker() bool {
 	return false
 }
 
-func (r Checker) handleWAFChecker() bool {
+func (r *Checker) handleWAFChecker() bool {
 
 	done := make(chan bool, 1)
 
 	go func() {
-		var wg sync.WaitGroup
-
-		r.result = make(chan *models.MatchResult, models.LenOfGroupedRequestPayloadDataCollection)
-
-		wg.Add(models.LenOfGroupedRequestPayloadDataCollection)
 
 		for key, payload := range models.RequestCheckPointPayloadData {
-			go r.handlePayload(key, payload, &wg)
+			r.handlePayload(key, payload)
 		}
-
-		wg.Wait()
-
-		close(r.result)
 
 		done <- true
 	}()
@@ -161,7 +152,7 @@ func (r Checker) handleWAFChecker() bool {
 		panic("failed to execute rules.")
 	}
 
-	for i := range r.result {
+	for _, i := range r.result {
 		for _, m := range i.MatchedPayloads {
 			if i.IsMatched {
 				if m.Action == "block" {
@@ -183,7 +174,7 @@ func (r Checker) handleWAFChecker() bool {
 	return false
 }
 
-func (r Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules map[string]interface{}, wg *sync.WaitGroup) {
+func (r *Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules map[string]interface{}, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	evalResult, everr := gval.Evaluate(rule.Expression, mapForFwRules)
@@ -195,51 +186,55 @@ func (r Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules 
 	r.firewallResult <- models.NewFirewallMatchResult(rule, evalResult.(bool)).Time(r.time)
 }
 
-func (r Checker) handlePayload(key string, payloads []models.PayloadData, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func (r *Checker) handlePayload(key string, payloads []models.PayloadData) {
 	switch key {
 	case "Query":
-		r.result <- r.handleQuery(payloads)
+		r.result = append(r.result, r.handleQuery(payloads))
 	case "Path":
-		r.result <- r.handlePath(payloads)
+		r.result = append(r.result, r.handlePath(payloads))
 	case "Form":
-		r.result <- r.handleForm(payloads)
+		r.result = append(r.result, r.handleForm(payloads))
 	case "Upload":
 		//Upload check point will be handled in handleForm function
-		r.result <- models.NewMatchResult(false)
+
+		r.result = append(r.result, models.NewMatchResult(false))
 	default:
-		r.result <- models.NewMatchResult(false)
+		r.result = append(r.result, models.NewMatchResult(false))
 	}
 }
 
-func (r Checker) handleQuery(payloads []models.PayloadData) *models.MatchResult {
+func (r *Checker) handleQuery(payloads []models.PayloadData) *models.MatchResult {
+	matchResult := models.NewMatchResult(false)
+
 	for _, p := range payloads {
-		isMatch, _ := models.IsMatch(p.Payload, r.RequestTransfer.Get(names.QUERY_STRING))
+		isMatch, _ := models.IsMatch(p.Payload, r.RequestTransfer.Get(variables.QUERY_STRING))
 
 		if isMatch {
-			return models.NewMatchResult(true).Append(&p).Time(r.time)
+			return matchResult.SetMatch(true).Append(&p).Time(r.time)
 		}
 	}
 
-	return models.NewMatchResult(false)
+	return matchResult
 }
 
-func (r Checker) handlePath(payloads []models.PayloadData) *models.MatchResult {
+func (r *Checker) handlePath(payloads []models.PayloadData) *models.MatchResult {
+	matchResult := models.NewMatchResult(false)
+
 	for _, p := range payloads {
-		isMatch, _ := models.IsMatch(p.Payload, r.RequestTransfer.Get(names.REQUEST_BASENAME))
+		isMatch, _ := models.IsMatch(p.Payload, r.RequestTransfer.Get(variables.REQUEST_BASENAME))
 
 		if isMatch {
-			return models.NewMatchResult(true).Append(&p).Time(r.time)
+			return matchResult.SetMatch(true).Append(&p).Time(r.time)
 		}
 	}
 
-	return models.NewMatchResult(false)
+	return matchResult
 }
 
-func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
+func (r *Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
+	matchResult := models.NewMatchResult(false)
 
-	if strings.HasPrefix(r.RequestTransfer.Get(names.REQUEST_BODY_TYPE), "multipart/form-data") {
+	if strings.HasPrefix(r.RequestTransfer.Get(variables.REQUEST_BODY_TYPE), "multipart/form-data") {
 		// ChkPoint_UploadFileExt
 		r.Request.ParseMultipartForm(1024)
 		if r.Request.MultipartForm != nil {
@@ -251,14 +246,14 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 					for _, p := range uploadCheck {
 						matched, _ := models.IsMatch(p.Payload, fileExtension)
 						if matched == true {
-							return models.NewMatchResult(true).Append(&p).Time(r.time)
+							return matchResult.SetMatch(true).Append(&p).Time(r.time)
 						}
 					}
 				}
 			}
 
 			// Multipart Content
-			multiReader := multipart.NewReader(r.Request.Body, r.RequestTransfer.Get(names.MULTIPART_BOUNDARY))
+			multiReader := multipart.NewReader(r.Request.Body, r.RequestTransfer.Get(variables.MULTIPART_BOUNDARY))
 			for {
 				p, err := multiReader.NextPart()
 				if err == io.EOF {
@@ -270,13 +265,13 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 					isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(string(partContent)))
 
 					if isMatch {
-						return models.NewMatchResult(true).Append(&p).Time(r.time)
+						return matchResult.SetMatch(true).Append(&p).Time(r.time)
 					}
 				}
 			}
 		}
 
-	} else if strings.HasPrefix(r.RequestTransfer.Get(names.REQUEST_BODY_TYPE), "application/json") {
+	} else if strings.HasPrefix(r.RequestTransfer.Get(variables.REQUEST_BODY_TYPE), "application/json") {
 		var params interface{}
 
 		decoder := json.NewDecoder(r.Request.Body)
@@ -302,7 +297,7 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 			isMatch, _ := models.IsMatch(p.Payload, key)
 
 			if isMatch {
-				return models.NewMatchResult(true).Append(&p).Time(r.time)
+				return matchResult.SetMatch(true).Append(&p).Time(r.time)
 			}
 
 			for _, value := range values {
@@ -323,16 +318,18 @@ func (r Checker) handleForm(payloads []models.PayloadData) *models.MatchResult {
 				isMatch, _ := models.IsMatch(p.Payload, value)
 
 				if isMatch {
-					return models.NewMatchResult(true).Append(&p).Time(r.time)
+					return matchResult.SetMatch(true).Append(&p).Time(r.time)
 				}
 			}
 		}
 	}
 
-	return models.NewMatchResult(false)
+	return matchResult
 }
 
-func (r Checker) isJSONValueHitPolicy(payloads []models.PayloadData, value interface{}) *models.MatchResult {
+func (r *Checker) isJSONValueHitPolicy(payloads []models.PayloadData, value interface{}) *models.MatchResult {
+	matchResult := models.NewMatchResult(false)
+
 	valueKind := reflect.TypeOf(value).Kind()
 	switch valueKind {
 	case reflect.String:
@@ -342,7 +339,7 @@ func (r Checker) isJSONValueHitPolicy(payloads []models.PayloadData, value inter
 			isMatch, _ := models.IsMatch(p.Payload, models.UnEscapeRawValue(value2))
 
 			if isMatch {
-				return models.NewMatchResult(true).Append(&p).Time(r.time)
+				return matchResult.SetMatch(true).Append(&p).Time(r.time)
 			}
 		}
 	case reflect.Map:
@@ -362,5 +359,5 @@ func (r Checker) isJSONValueHitPolicy(payloads []models.PayloadData, value inter
 			}
 		}
 	}
-	return models.NewMatchResult(false)
+	return matchResult
 }
