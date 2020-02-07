@@ -123,7 +123,9 @@ func TestCalcTime(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	result := CalcTime(start)
+	end := time.Now()
+
+	result := CalcTime(start, end)
 	expect := int64(1000)
 
 	if result >= expect {
@@ -132,5 +134,22 @@ func TestCalcTime(t *testing.T) {
 	} else {
 		t.Errorf("CalcTime(\"%v\") FAILED, expected %v got %v.",
 			start, expect, result)
+	}
+}
+
+func TestCalcTimeNow(t *testing.T) {
+	ti := time.Now()
+
+	time.Sleep(1 * time.Second)
+
+	result := CalcTimeNow(ti)
+	expect := int64(1000)
+
+	if result >= expect {
+		t.Logf("CalcTime(\"%v\") PASSED, expected %v got %v.",
+			ti, expect, result)
+	} else {
+		t.Errorf("CalcTime(\"%v\") FAILED, expected %v got %v.",
+			ti, expect, result)
 	}
 }
