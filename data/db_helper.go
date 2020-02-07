@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/asalih/guardian/matches"
+
 	"github.com/asalih/guardian/models"
 	"github.com/google/uuid"
 
@@ -130,8 +132,8 @@ func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallR
 
 //LogMatchResult ...
 func (h *DBHelper) LogMatchResult(
-	matchResult *models.MatchResult,
-	payload *models.PayloadData,
+	matchResult *matches.MatchResult,
+	ruleId string,
 	target *models.Target,
 	requestURI string,
 	forResponse bool) {
@@ -152,17 +154,17 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 		ruleFor = 1
 	}
 
-	wafAction := models.GetWafAction(payload.Action)
+	//wafAction := models.GetWafAction(payload.Action)
 	_, err = conn.Exec(sqlStatement,
 		uuid.New(),
 		time.Now(),
 		target.ID, true,
 		matchResult.Elapsed,
 		models.LogTypeWAF,
-		payload.Payload,
+		ruleId,
 		requestURI,
 		ruleFor,
-		wafAction)
+		0 /*wafAction*/)
 
 	if err != nil {
 		panic(err)
@@ -171,7 +173,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 }
 
 //LogFirewallMatchResult ...
-func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target, requestURI string, forResponse bool) {
+/*func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target, requestURI string, forResponse bool) {
 	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
@@ -203,7 +205,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 	if err != nil {
 		panic(err)
 	}
-}
+}*/
 
 //LogHTTPRequest ...
 func (h *DBHelper) LogHTTPRequest(log *models.HTTPLog) {

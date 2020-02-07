@@ -1,4 +1,0 @@
-[
-    {"action": "remove", "checkPoint": "Header", "payload": "(?i)Server(.*)", "type": "Server Header Remove"},
-    {"action": "remove", "checkPoint": "Header", "payload": "(?i)x-powered-by(.*)", "type": "Server Header Remove"}
-]

@@ -1,13 +1,17 @@
 package main
 
-import "github.com/asalih/guardian/models"
+import (
+
+	"github.com/asalih/guardian/models"
+	"github.com/asalih/guardian/operators"
+)
 
 func main() {
+
 	models.InitConfig()
 
-	//Let's init the payload data collection
-	models.InitRequestPayloadDataCollection()
-	models.InitResponsePayloadDataCollection()
+	operators.InitOperatorMap()
+	models.InitRulesCollection()
 
 	srv := NewHTTPServer()
 

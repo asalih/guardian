@@ -89,7 +89,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
+	httpLog.OriginRequestStart()
 	uriToReq := r.Host
 
 	if target.Proto == 0 {
@@ -110,11 +110,13 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	httpLog.OriginRequestEnd()
+
 	httpLog.ResponseRulesExecutionStart()
 
 	responseIsNotSafe := response.NewResponseChecker(w, r, transportResponse, target).Handle()
 
-	httpLog = httpLog.RequestRulesExecutionEnd()
+	httpLog = httpLog.ResponseRulesExecutionEnd()
 
 	if responseIsNotSafe {
 		go h.logHTTPRequest(httpLog.Build(target, r, nil))

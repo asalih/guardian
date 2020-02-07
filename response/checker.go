@@ -6,9 +6,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/asalih/guardian/matches"
+
 	"github.com/PaesslerAG/gval"
 
 	"github.com/asalih/guardian/data"
+	"github.com/asalih/guardian/helpers"
 	"github.com/asalih/guardian/models"
 )
 
@@ -20,9 +23,8 @@ type Checker struct {
 	Target         *models.Target
 
 	requestTransfer *responseTransfer
-	result          []*models.MatchResult
-	firewallResult  chan *models.FirewallMatchResult
-	time            time.Time
+	result          []*matches.MatchResult
+	firewallResult  chan *matches.FirewallMatchResult
 }
 
 type responseTransfer struct {
@@ -32,7 +34,7 @@ type responseTransfer struct {
 
 /*NewResponseChecker Request checker initializer*/
 func NewResponseChecker(w http.ResponseWriter, r *http.Request, resp *http.Response, target *models.Target) *Checker {
-	return &Checker{w, r, resp, target, nil, nil, nil, time.Now()}
+	return &Checker{w, r, resp, target, nil, nil, nil}
 }
 
 /*Handle Request checker handler func*/
@@ -66,7 +68,7 @@ func (r *Checker) handleFirewallRuleChecker() bool {
 		firewallRules := db.GetResponseFirewallRules(r.Target.ID)
 		lenOfRules := len(firewallRules)
 
-		r.firewallResult = make(chan *models.FirewallMatchResult, lenOfRules)
+		r.firewallResult = make(chan *matches.FirewallMatchResult, lenOfRules)
 
 		wg.Add(lenOfRules)
 
@@ -78,16 +80,16 @@ func (r *Checker) handleFirewallRuleChecker() bool {
 				"query":    r.Request.URL.RawQuery,
 				"path":     r.Request.URL.Path,
 				"host":     r.Request.URL.Host,
-				"cookie":   models.CookiesToString(r.Request.Cookies()),
-				"header":   models.HeadersToString(r.Request.Header),
+				"cookie":   helpers.CookiesToString(r.Request.Cookies()),
+				"header":   helpers.HeadersToString(r.Request.Header),
 				"method":   r.Request.Method,
 				"protocol": r.Request.Proto,
 			},
 			"response": map[string]interface{}{
 				"status":        r.Response.Status,
 				"statusCode":    r.Response.StatusCode,
-				"cookie":        models.CookiesToString(r.Response.Cookies()),
-				"header":        models.HeadersToString(r.Response.Header),
+				"cookie":        helpers.CookiesToString(r.Response.Cookies()),
+				"header":        helpers.HeadersToString(r.Response.Header),
 				"contentLength": r.Response.ContentLength,
 			},
 		}
@@ -109,7 +111,7 @@ func (r *Checker) handleFirewallRuleChecker() bool {
 		panic("failed to execute rules.")
 	}
 
-	for i := range r.firewallResult {
+	/*for i := range r.firewallResult {
 		//Action: 0 is block
 		//Action: 1 is allow
 		if i.IsMatched && i.FirewallRule.Action == 0 ||
@@ -121,7 +123,7 @@ func (r *Checker) handleFirewallRuleChecker() bool {
 
 			return true
 		}
-	}
+	}*/
 
 	return false
 }
@@ -135,7 +137,8 @@ func (r *Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules
 		fmt.Println(everr)
 	}
 
-	r.firewallResult <- models.NewFirewallMatchResult(rule, evalResult.(bool)).Time(r.time)
+	//r.firewallResult <- matches.NewFirewallMatchResult(rule, evalResult.(bool)).Time(r.time)
+	r.firewallResult <- matches.NewFirewallMatchResult(evalResult.(bool))
 }
 
 func (r *Checker) handleWAFChecker() bool {
@@ -144,9 +147,9 @@ func (r *Checker) handleWAFChecker() bool {
 
 	go func() {
 
-		for key, payload := range models.ResponseCheckPointPayloadData {
+		/*for key, payload := range models.ResponseCheckPointPayloadData {
 			r.handlePayload(key, payload)
-		}
+		}*/
 
 		done <- true
 	}()
@@ -157,7 +160,7 @@ func (r *Checker) handleWAFChecker() bool {
 		panic("failed to execute rules.")
 	}
 
-	for _, i := range r.result {
+	/*for _, i := range r.result {
 		for _, m := range i.MatchedPayloads {
 			if i.IsMatched {
 				db := &data.DBHelper{}
@@ -175,19 +178,19 @@ func (r *Checker) handleWAFChecker() bool {
 				//TODO: Handle new action types
 			}
 		}
-	}
+	}*/
 
 	return false
 }
 
-func (r *Checker) handlePayload(key string, payloads []models.PayloadData) {
+/*func (r *Checker) handlePayload(key string, payloads []models.PayloadData) {
 	switch key {
 	case "Header":
 		r.result = append(r.result, r.handleHeader(payloads))
 	}
-}
+}*/
 
-func (r *Checker) handleHeader(payloads []models.PayloadData) *models.MatchResult {
+/*func (r *Checker) handleHeader(payloads []models.PayloadData) *models.MatchResult {
 	matchResult := models.NewMatchResult(false)
 
 	for _, p := range payloads {
@@ -208,3 +211,4 @@ func (r *Checker) handleHeader(payloads []models.PayloadData) *models.MatchResul
 
 	return matchResult
 }
+*/

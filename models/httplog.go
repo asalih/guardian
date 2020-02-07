@@ -3,6 +3,8 @@ package models
 import (
 	"net/http"
 	"time"
+
+	"github.com/asalih/guardian/helpers"
 )
 
 //HTTPLog represents http log
@@ -36,7 +38,6 @@ func (h *HTTPLog) Build(target *Target, request *http.Request, response *http.Re
 
 	h.ResponseSize = response.ContentLength
 	h.StatusCode = response.StatusCode
-	h.HTTPElapsed = CalcTime(h.timer)
 
 	return h
 }
@@ -44,14 +45,14 @@ func (h *HTTPLog) Build(target *Target, request *http.Request, response *http.Re
 //NoResponse handles when no response
 func (h *HTTPLog) NoResponse() *HTTPLog {
 	h.StatusCode = -1
-	h.HTTPElapsed = CalcTime(h.timer)
+	h.HTTPElapsed = helpers.CalcTimeNow(h.timer)
 
 	return h
 }
 
 //RequestRulesExecutionEnd Calculates the time for execution of rules
 func (h *HTTPLog) RequestRulesExecutionEnd() *HTTPLog {
-	h.RequestRulesCheckElapsed = CalcTime(h.timer)
+	h.RequestRulesCheckElapsed = helpers.CalcTimeNow(h.timer)
 
 	return h
 }
@@ -65,7 +66,21 @@ func (h *HTTPLog) ResponseRulesExecutionStart() *HTTPLog {
 
 //ResponseRulesExecutionEnd Response execution time measure ender
 func (h *HTTPLog) ResponseRulesExecutionEnd() *HTTPLog {
-	h.ResponseRulesCheckElapsed = CalcTime(h.timer)
+	h.ResponseRulesCheckElapsed = helpers.CalcTimeNow(h.timer)
+
+	return h
+}
+
+//OriginRequestStart Origin request time measure starter
+func (h *HTTPLog) OriginRequestStart() *HTTPLog {
+	h.timer = time.Now()
+
+	return h
+}
+
+//OriginRequestEnd Origin request execution time measure ender
+func (h *HTTPLog) OriginRequestEnd() *HTTPLog {
+	h.HTTPElapsed = helpers.CalcTimeNow(h.timer)
 
 	return h
 }

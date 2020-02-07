@@ -1,4 +1,4 @@
-package models
+package helpers
 
 import (
 	"fmt"
@@ -63,6 +63,7 @@ func CookiesToString(cookie []*http.Cookie) (res string) {
 	return
 }
 
+//GetCookiesNames ...
 func GetCookiesNames(cookie []*http.Cookie) (res []string) {
 	for _, values := range cookie {
 		res = append(res, values.Name)
@@ -71,6 +72,20 @@ func GetCookiesNames(cookie []*http.Cookie) (res []string) {
 }
 
 //CalcTime ...
-func CalcTime(start time.Time) int64 {
-	return time.Since(start).Nanoseconds() / int64(time.Millisecond)
+func CalcTime(start time.Time, end time.Time) int64 {
+	return end.Sub(start).Nanoseconds() / int64(time.Millisecond)
+}
+
+func CalcTimeNow(end time.Time) int64 {
+	return time.Since(end).Nanoseconds() / int64(time.Millisecond)
+}
+
+func StringContains(slice []string, item string) bool {
+	set := make(map[string]struct{}, len(slice))
+	for _, s := range slice {
+		set[s] = struct{}{}
+	}
+
+	_, ok := set[item]
+	return ok
 }
