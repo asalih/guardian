@@ -31,6 +31,10 @@ type Variable struct {
 }
 
 func (variable *Variable) ShouldPassCheck(value string) bool {
+	if variable.Filter == nil{
+		return false
+	}
+	
 	filterContainsKey := helpers.StringContains(variable.Filter, value)
 
 	if !filterContainsKey && !variable.FilterIsNotType ||

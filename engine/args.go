@@ -44,10 +44,13 @@ func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePos
 			if executer.variable.ShouldPassCheck(q) {
 				continue
 			}
-			matchResult = executer.rule.ExecuteRule(queries[q])
 
-			if matchResult.IsMatched {
-				return matchResult
+			for _, value := range queries[q] {
+				matchResult = executer.rule.ExecuteRule(value)
+
+				if matchResult.IsMatched {
+					return matchResult
+				}
 			}
 		}
 	}
@@ -66,10 +69,12 @@ func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePos
 			if executer.variable.ShouldPassCheck(f) {
 				continue
 			}
-			matchResult = executer.rule.ExecuteRule(form[f])
+			for _, value := range form[f] {
+				matchResult = executer.rule.ExecuteRule(value)
 
-			if matchResult.IsMatched {
-				return matchResult
+				if matchResult.IsMatched {
+					return matchResult
+				}
 			}
 		}
 	}
