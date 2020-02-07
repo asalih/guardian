@@ -43,7 +43,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if !h.IPRateLimiter.IsAllowed(ipAddress) {
 		w.WriteHeader(http.StatusTooManyRequests)
-		fmt.Fprintf(w, "Too Many Requests. %s", r.URL.Path)
+		fmt.Fprintf(w, "Too Many Requests. %s", url.QueryEscape(r.URL.Path))
 
 		go DB.LogThrottleRequest(ipAddress)
 
