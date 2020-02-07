@@ -29,7 +29,8 @@ var RulesCollection []*Rule
 
 //InitRulesCollection Rules data initializer
 func InitRulesCollection() {
-	InitRulesCollectionFile("crs.conf")
+	InitRulesCollectionFile("crs_xss.conf")
+	InitRulesCollectionFile("crs_sqli.conf")
 }
 
 //InitRulesCollectionFile Rules data initializer
