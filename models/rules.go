@@ -180,11 +180,13 @@ func parseOperators(operator string) []Operator {
 		opr := strings.NewReplacer("\"", "")
 		parsedOperator = opr.Replace(opMatch[1])
 
-		r := strings.NewReplacer(parsedOperator, "", "\"", "", "@", "", "!", "")
-		parsedExpression = strings.Trim(r.Replace(operator), " ")
+		r := strings.NewReplacer(parsedOperator, "")
+		parsedExpression = strings.TrimLeft(strings.Trim(r.Replace(operator), "\""), "")
+		parsedExpression = strings.TrimLeft(parsedExpression, "@! ")
+
 	} else {
-		r := strings.NewReplacer("\"", "", "@", "", "!", "")
-		parsedExpression = strings.Trim(r.Replace(operator), " ")
+		parsedExpression = strings.TrimLeft(strings.Trim(operator, "\""), "")
+		parsedExpression = strings.TrimLeft(parsedExpression, "@! ")
 	}
 
 	return []Operator{Operator{parsedOperator, parsedExpression, isNotOperator}}
