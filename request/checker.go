@@ -3,6 +3,7 @@ package request
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -142,7 +143,7 @@ func (r *Checker) handleWAFChecker() bool {
 	if r.result != nil && r.result.IsMatched {
 		//if m.Action == "block" {
 		r.ResponseWriter.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
+		fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", url.QueryEscape(r.Request.URL.Path))
 
 		db := &data.DBHelper{}
 
