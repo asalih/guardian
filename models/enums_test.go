@@ -1,49 +1,25 @@
 package models
 
 import (
-	"reflect"
 	"testing"
 )
 
-func TestWafAction_ToString(t *testing.T) {
+func TestDisruptiveAction_ToString(t *testing.T) {
 	tests := []struct {
 		name   string
-		action WafAction
+		action DisruptiveAction
 		want   string
 	}{
-		{"allow", WafActionAllow, "Allow"},
-		{"block", WafActionBlock, "Block"},
-		{"log", WafActionLog, "Log"},
-		{"remove", WafActionRemove, "Remove"},
+		{"pass", DisruptiveActionPass, "pass"},
+		{"block", DisruptiveActionBlock, "block"},
+		{"drop", DisruptiveActionDrop, "drop"},
+		{"deny", DisruptiveActionDeny, "deny"},
+		{"proxy", DisruptiveActionProxy, "proxy"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.action.ToString(); got != tt.want {
-				t.Errorf("WafAction.ToString() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetWafAction(t *testing.T) {
-	type args struct {
-		action string
-	}
-	tests := []struct {
-		name   string
-		action string
-		want   WafAction
-	}{
-		{"block", "block", WafActionBlock},
-		{"allow", "allow", WafActionAllow},
-		{"log", "log", WafActionLog},
-		{"remove", "remove", WafActionRemove},
-		{"none", "none", 0},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetWafAction(tt.action); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetWafAction() = %v, want %v", got, tt.want)
+				t.Errorf("DisruptiveAction.ToString() = %v, want %v", got, tt.want)
 			}
 		})
 	}
