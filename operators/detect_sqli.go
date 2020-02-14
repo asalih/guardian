@@ -1,18 +1,15 @@
 package operators
 
 import (
-	"github.com/asalih/guardian/matches"
 	"github.com/koangel/grapeSQLI"
 )
 
 func (opMap *OperatorMap) loadDetectSqli() {
-	opMap.funcMap["detectSQLi"] = func(expression interface{}, variableData interface{}) *matches.MatchResult {
-		matchResult := matches.NewMatchResult(false)
-
+	opMap.funcMap["detectSQLi"] = func(expression interface{}, variableData interface{}) bool {
 		if err := GSQLI.SQLInject(variableData.(string)); err != nil {
-			matchResult.SetMatch(true)
+			return true
 		}
 
-		return matchResult
+		return false
 	}
 }

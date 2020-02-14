@@ -7,14 +7,14 @@ import (
 
 var REQUEST_COOKIES_NAMES = "REQUEST_COOKIES_NAMES"
 
-func (t *Transaction) loadRequestCookiesNames() *Transaction {
+func (t *TransactionMap) loadRequestCookiesNames() *TransactionMap {
 
 	t.variableMap[REQUEST_COOKIES_NAMES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			httpData := helpers.GetCookiesNames(executer.request.Cookies())
 
-			matchResult := matches.NewMatchResult(false)
+			matchResult := matches.NewMatchResult()
 
 			if executer.variable.LengthCheckForCollection {
 				lenOfCookies := 0

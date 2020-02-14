@@ -6,15 +6,15 @@ import (
 
 var FILES = "FILES"
 
-func (t *Transaction) loadFiles() *Transaction {
+func (t *TransactionMap) loadFiles() *TransactionMap {
 	t.variableMap[FILES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			matchResult := matches.NewMatchResult(false)
+			matchResult := matches.NewMatchResult()
 
 			muliErr := executer.request.ParseMultipartForm(1024 * 1024 * 4)
 
 			if muliErr != nil {
-				return matchResult.SetMatch(true)
+				return matchResult.SetMatch(false)
 			}
 
 			files := executer.request.MultipartForm.File

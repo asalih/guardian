@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/asalih/guardian/matches"
@@ -8,9 +9,14 @@ import (
 	"github.com/asalih/guardian/models"
 )
 
-type Transaction struct {
+var TransactionMaps *TransactionMap
+
+type TransactionMap struct {
 	variableMap map[string]*TransactionData
-	request     *http.Request
+}
+
+type Transaction struct {
+	request *http.Request
 }
 
 type TransactionData struct {
@@ -24,58 +30,79 @@ type TransactionExecuterModel struct {
 	variable        *models.Variable
 }
 
-// NewRequestTransfer Initiates a new request variable object
-func NewTransaction(request *http.Request) *Transaction {
-	transactionData := Transaction{make(map[string]*TransactionData), request}
+func InitTransactionMap() {
+	TransactionMaps = &TransactionMap{make(map[string]*TransactionData)}
 
-	transactionData.loadArgs()
-	transactionData.loadArgsNames()
-	transactionData.loadArgsCombinedSize()
-	transactionData.loadAuthType()
-	transactionData.loadDuration() //Not implemented
-	transactionData.loadEnv()      //Not implemented
-	transactionData.loadFiles()
-	transactionData.loadFilesCombinedSize() //TODO might add mime type
-	transactionData.loadFilesNames()
-	transactionData.loadFullRequestAndLength()
-	transactionData.loadFilesSizes()
-	transactionData.loadFilesTmpNames()        //Not implemented
-	transactionData.loadFilesTmpContent()      //Not implemented
-	transactionData.loadGeo()                  //Not implemented
-	transactionData.loadHighestSeverity()      //Not implemented
-	transactionData.loadInboundDataError()     //Not implemented
-	transactionData.loadMatchedVar()           //Not implemented
-	transactionData.loadMatchedVars()          //Not implemented
-	transactionData.loadMultipartCrlfLfLines() //Not implemented
-	transactionData.loadMultipartName()
-	transactionData.loadQueryString()
-	transactionData.loadRequestCookies()
-	transactionData.loadRequestCookiesNames()
-	transactionData.loadRequestHeaders()
-	transactionData.loadRequestHeadersNames()
-	transactionData.loadRequestBodyType()
-	transactionData.loadRequestUri()
-
-	return &transactionData
+	TransactionMaps.loadArgs()
+	TransactionMaps.loadArgsNames()
+	TransactionMaps.loadArgsCombinedSize()
+	TransactionMaps.loadAuthType()
+	TransactionMaps.loadDuration() //Not implemented
+	TransactionMaps.loadEnv()      //Not implemented
+	TransactionMaps.loadFiles()
+	TransactionMaps.loadFilesCombinedSize() //TODO might add mime type
+	TransactionMaps.loadFilesNames()
+	TransactionMaps.loadFullRequestAndLength()
+	TransactionMaps.loadFilesSizes()
+	TransactionMaps.loadFilesTmpNames()        //Not implemented
+	TransactionMaps.loadFilesTmpContent()      //Not implemented
+	TransactionMaps.loadGeo()                  //Not implemented
+	TransactionMaps.loadHighestSeverity()      //Not implemented
+	TransactionMaps.loadInboundDataError()     //Not implemented
+	TransactionMaps.loadMatchedVar()           //Not implemented
+	TransactionMaps.loadMatchedVars()          //Not implemented
+	TransactionMaps.loadMultipartCrlfLfLines() //Not implemented
+	TransactionMaps.loadQueryString()
+	TransactionMaps.loadRequestCookies()
+	TransactionMaps.loadRequestCookiesNames()
+	TransactionMaps.loadRequestHeaders()
+	TransactionMaps.loadRequestHeadersNames()
+	TransactionMaps.loadRequestBodyType()
+	TransactionMaps.loadRequestUri()
 }
 
-func (t *Transaction) ExecuteRule(rule *models.Rule) *matches.MatchResult {
+// NewRequestTransfer Initiates a new request variable object
+func NewTransaction(request *http.Request) *Transaction {
+	return &Transaction{request}
+}
+
+func (tMap *TransactionMap) Get(key string) *TransactionData {
+	return tMap.variableMap[key]
+}
+
+//Execute Executes transaction for rule
+func (t *Transaction) Execute(rule *models.Rule) *matches.MatchResult {
 
 	var matchResult *matches.MatchResult
 
 	for _, variable := range rule.Variables {
-		mapData := t.variableMap[variable.Name]
+		mapData := TransactionMaps.Get(variable.Name)
 
 		if mapData == nil {
 			//TODO log unknown Rule
-			return matches.NewMatchResult(false)
+			fmt.Println("Unrecognized variable: " + variable.Name)
+			return nil
 		}
 
-		executerModel := &TransactionExecuterModel{t.request, mapData, rule, &variable}
+		executerModel := &TransactionExecuterModel{t.request, mapData, rule, variable}
 		matchResult = mapData.executer(executerModel)
 
-		if matchResult.IsMatched {
-			return matchResult
+		if matchResult.IsMatched && !variable.FilterIsNotType && !rule.Operator.OperatorIsNotType {
+			if rule.Chain != nil {
+				matchResult = t.Execute(rule.Chain)
+
+				if matchResult == nil {
+					continue
+				}
+
+				if matchResult.IsMatched {
+					return matchResult
+				}
+			} else {
+				return matchResult
+			}
+		} else if !matchResult.IsMatched && !matchResult.DefaultState && (variable.FilterIsNotType || rule.Operator.OperatorIsNotType) {
+			return matchResult.SetMatch(true)
 		}
 	}
 

@@ -8,7 +8,7 @@ var ARGS_NAMES = "ARGS_NAMES"
 var ARGS_GET_NAMES = "ARGS_GET_NAMES"
 var ARGS_POST_NAMES = "ARGS_POST_NAMES"
 
-func (t *Transaction) loadArgsNames() *Transaction {
+func (t *TransactionMap) loadArgsNames() *TransactionMap {
 	t.variableMap[ARGS_NAMES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
@@ -37,7 +37,7 @@ func (t *Transaction) loadArgsNames() *Transaction {
 }
 
 func argsNameHandler(executer *TransactionExecuterModel, executeGet bool, executePost bool) *matches.MatchResult {
-	matchResult := matches.NewMatchResult(false)
+	matchResult := matches.NewMatchResult()
 	if executeGet {
 		queries := executer.request.URL.Query()
 		for q := range queries {
@@ -78,7 +78,7 @@ func argsNameHandler(executer *TransactionExecuterModel, executeGet bool, execut
 }
 
 func argsNameLengthHandler(executer *TransactionExecuterModel, executeGet bool, executePost bool) *matches.MatchResult {
-	matchResult := matches.NewMatchResult(false)
+	matchResult := matches.NewMatchResult()
 	lengthOfParams := 0
 	if executeGet {
 		queries := executer.request.URL.Query()

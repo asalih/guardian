@@ -1,24 +1,19 @@
 package operators
 
-import (
-	"github.com/asalih/guardian/matches"
-)
-
 func (opMap *OperatorMap) loadUrlEncoding() {
-	opMap.funcMap["validateUrlEncoding"] = func(expression interface{}, variableData interface{}) *matches.MatchResult {
-		matchResult := matches.NewMatchResult(false)
+	opMap.funcMap["validateUrlEncoding"] = func(expression interface{}, variableData interface{}) bool {
 
 		data := variableData.(string)
 
 		if data == "" {
-			return matchResult
+			return false
 		}
 
 		if validateUrlEncoding(variableData.(string)) == 1 {
-			matchResult.SetMatch(true)
+			return true
 		}
 
-		return matchResult
+		return false
 	}
 }
 

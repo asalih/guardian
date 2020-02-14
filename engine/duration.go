@@ -6,11 +6,11 @@ import (
 
 var DURATION = "DURATION"
 
-func (t *Transaction) loadDuration() *Transaction {
+func (t *TransactionMap) loadDuration() *TransactionMap {
 	t.variableMap[DURATION] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
-			return matches.NewMatchResult(false)
+			return matches.NewMatchResult().SetMatch(true)
 		}}
 
 	return t

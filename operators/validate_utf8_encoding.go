@@ -1,9 +1,5 @@
 package operators
 
-import (
-	"github.com/asalih/guardian/matches"
-)
-
 //var int UNICODE_ERROR_DECODING_ERROR = 0
 
 var UNICODE_ERROR_CHARACTERS_MISSING int = -1
@@ -13,8 +9,7 @@ var UNICODE_ERROR_RESTRICTED_CHARACTER int = -4
 var UNICODE_ERROR_DECODING_ERROR int = -5
 
 func (opMap *OperatorMap) loadValidateUtf8Encoding() {
-	opMap.funcMap["validateUtf8Encoding"] = func(expression interface{}, variableData interface{}) *matches.MatchResult {
-		matchResult := matches.NewMatchResult(false)
+	opMap.funcMap["validateUtf8Encoding"] = func(expression interface{}, variableData interface{}) bool {
 		data := variableData.(string)
 
 		i := 0
@@ -24,14 +19,14 @@ func (opMap *OperatorMap) loadValidateUtf8Encoding() {
 			rc := detectUtf8Character(int(data[i]), bytes_left)
 
 			if rc <= 0 {
-				return matchResult.SetMatch(true)
+				return true
 			}
 
 			i += rc
 			bytes_left -= rc
 		}
 
-		return matchResult
+		return false
 	}
 }
 

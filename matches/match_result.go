@@ -8,20 +8,21 @@ import (
 
 //MatchResult Match result
 type MatchResult struct {
-	//	MatchedRules []*engine.Rule
-	IsMatched bool
-	StartTime time.Time
-	Elapsed   int64
+	IsMatched    bool
+	DefaultState bool
+	StartTime    time.Time
+	Elapsed      int64
 }
 
 //NewMatchResult Inits match result
-func NewMatchResult(isMatched bool) *MatchResult {
-	return &MatchResult{isMatched, time.Now(), 0}
+func NewMatchResult() *MatchResult {
+	return &MatchResult{false, true, time.Now(), 0}
 }
 
 //SetMatch ...
 func (m *MatchResult) SetMatch(isMatched bool) *MatchResult {
 	m.IsMatched = isMatched
+	m.DefaultState = false
 
 	m.Elapsed = helpers.CalcTime(m.StartTime, time.Now())
 

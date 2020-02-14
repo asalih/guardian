@@ -7,13 +7,13 @@ import (
 
 var REQUEST_HEADERS_NAMES = "REQUEST_HEADERS_NAMES"
 
-func (t *Transaction) loadRequestHeadersNames() *Transaction {
+func (t *TransactionMap) loadRequestHeadersNames() *TransactionMap {
 	t.variableMap[REQUEST_HEADERS_NAMES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			httpData := helpers.GetHeadersNames(executer.request.Header)
 
-			matchResult := matches.NewMatchResult(false)
+			matchResult := matches.NewMatchResult()
 
 			if executer.variable.LengthCheckForCollection {
 				lenOfHeaders := 0

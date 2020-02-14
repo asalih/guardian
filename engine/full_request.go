@@ -11,7 +11,7 @@ import (
 var FULL_REQUEST = "FULL_REQUEST"
 var FULL_REQUEST_LENGTH = "FULL_REQUEST_LENGTH"
 
-func (t *Transaction) loadFullRequestAndLength() *Transaction {
+func (t *TransactionMap) loadFullRequestAndLength() *TransactionMap {
 	t.variableMap[FULL_REQUEST] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			httpData := formatRequest(executer.request)

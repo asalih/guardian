@@ -1,21 +1,19 @@
 package operators
 
-import (
-	"github.com/asalih/guardian/matches"
-)
+var RulesAndDatasPath string = "./crs/"
 
 var OperatorMaps *OperatorMap
 
 type OperatorMap struct {
-	funcMap map[string]func(expression interface{}, variableData interface{}) *matches.MatchResult
+	funcMap map[string]func(expression interface{}, variableData interface{}) bool
 }
 
-func (ops *OperatorMap) Get(key string) func(interface{}, interface{}) *matches.MatchResult {
+func (ops *OperatorMap) Get(key string) func(interface{}, interface{}) bool {
 	return ops.funcMap[key]
 }
 
 func InitOperatorMap() {
-	OperatorMaps = &OperatorMap{make(map[string]func(interface{}, interface{}) *matches.MatchResult)}
+	OperatorMaps = &OperatorMap{make(map[string]func(interface{}, interface{}) bool)}
 
 	OperatorMaps.loadBeginsWith()
 	OperatorMaps.loadContains()
@@ -35,9 +33,9 @@ func InitOperatorMap() {
 	OperatorMaps.loadLt()
 	OperatorMaps.loadNoMatch()
 	OperatorMaps.loadPm()
-	OperatorMaps.loadPmFromFile() //Not implemented
-	OperatorMaps.loadRbl()        //Not implemented
-	OperatorMaps.loadRsub()       //Not implemented
+	OperatorMaps.loadPmFromFile()
+	OperatorMaps.loadRbl()  //Not implemented
+	OperatorMaps.loadRsub() //Not implemented
 	OperatorMaps.loadRx()
 	OperatorMaps.loadStreq()
 	OperatorMaps.loadStrmatch()

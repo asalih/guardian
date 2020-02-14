@@ -6,7 +6,7 @@ import (
 
 var AUTH_TYPE = "AUTH_TYPE"
 
-func (t *Transaction) loadAuthType() *Transaction {
+func (t *TransactionMap) loadAuthType() *TransactionMap {
 	t.variableMap[AUTH_TYPE] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			headerValue := executer.request.Header.Get("Authorization")

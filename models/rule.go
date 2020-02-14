@@ -1,7 +1,8 @@
 package models
 
 import (
-	"github.com/asalih/guardian/helpers"
+	"fmt"
+
 	"github.com/asalih/guardian/matches"
 	"github.com/asalih/guardian/operators"
 )
@@ -10,66 +11,47 @@ import (
 
 //Rule the rule model
 type Rule struct {
-	Variables []Variable
-	Operators []Operator
-	Actions   []string
+	Variables []*Variable
+	Operator  *Operator
+	Action    *Action
+	Chain     *Rule
 }
 
-//Operator definition for a rule
-type Operator struct {
-	Func              string
-	Expression        string
-	OperatorIsNotType bool
-}
-
-//Variable definition for a rule
-type Variable struct {
-	Name                     string
-	Filter                   []string
-	FilterIsNotType          bool
-	LengthCheckForCollection bool
-}
-
-func (variable *Variable) ShouldPassCheck(value string) bool {
-	if variable.Filter == nil{
-		return false
-	}
-	
-	filterContainsKey := helpers.StringContains(variable.Filter, value)
-
-	if !filterContainsKey && !variable.FilterIsNotType ||
-		filterContainsKey && variable.FilterIsNotType {
-		return true
-	}
-
-	return false
+//RuleExecutionResult the result object
+type RuleExecutionResult struct {
+	MatchResult *matches.MatchResult
+	Rule        *Rule
 }
 
 //NewRule Inits a rule
-func NewRule(variables []Variable, operators []Operator, actions string) *Rule {
-	return &Rule{variables, operators, []string{actions}}
+func NewRule(variables []*Variable, operators *Operator, action *Action, chain *Rule) *Rule {
+	return &Rule{variables, operators, action, chain}
 }
 
+//ExecuteRule Executes rule and returns match result
 func (rule *Rule) ExecuteRule(variableData interface{}) *matches.MatchResult {
+	matchResult := matches.NewMatchResult()
 
-	var matchResult *matches.MatchResult
+	fn := operators.OperatorMaps.Get(rule.Operator.Func)
 
-	for _, ops := range rule.Operators {
-		fn := operators.OperatorMaps.Get(ops.Func)
+	if fn == nil {
+		//TODO Handle unrecognized fn
+		fmt.Println("Unrecognized Operator fn" + rule.Operator.Func)
+		return matches.NewMatchResult()
+	}
 
-		if fn == nil {
-			//TODO Handle unrecognized fn
-			return matches.NewMatchResult(false)
-		}
+	operatorResult := fn(rule.Operator.Expression, variableData)
 
-		matchResult = fn(ops.Expression, variableData)
-
-		if matchResult.IsMatched && !ops.OperatorIsNotType {
-			return matchResult
-		} else if ops.OperatorIsNotType {
-			return matchResult.SetMatch(true)
-		}
+	if operatorResult && !rule.Operator.OperatorIsNotType {
+		return matchResult.SetMatch(true)
+	} else if rule.Operator.OperatorIsNotType {
+		return matchResult.SetMatch(true)
 	}
 
 	return matchResult
+}
+
+//ShouldBlock Determines whether rule is blocking action
+func (rule *Rule) ShouldBlock() bool {
+	return rule.Action.DisruptiveAction == DisruptiveActionBlock || rule.Action.DisruptiveAction == DisruptiveActionDeny
 }

@@ -6,11 +6,11 @@ import (
 
 var HIGHEST_SEVERITY = "HIGHEST_SEVERITY"
 
-func (t *Transaction) loadHighestSeverity() *Transaction {
+func (t *TransactionMap) loadHighestSeverity() *TransactionMap {
 	t.variableMap[HIGHEST_SEVERITY] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
-			return matches.NewMatchResult(false)
+			return matches.NewMatchResult()
 		}}
 
 	return t

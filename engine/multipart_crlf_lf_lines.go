@@ -6,11 +6,11 @@ import (
 
 var MULTIPART_CRLF_LF_LINES = "MULTIPART_CRLF_LF_LINES"
 
-func (t *Transaction) loadMultipartCrlfLfLines() *Transaction {
+func (t *TransactionMap) loadMultipartCrlfLfLines() *TransactionMap {
 	t.variableMap[MULTIPART_CRLF_LF_LINES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
-			return matches.NewMatchResult(false)
+			return matches.NewMatchResult()
 		}}
 
 	return t

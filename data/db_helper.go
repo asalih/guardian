@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/asalih/guardian/matches"
-
 	"github.com/asalih/guardian/models"
 	"github.com/google/uuid"
 
@@ -132,7 +130,7 @@ func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallR
 
 //LogMatchResult ...
 func (h *DBHelper) LogMatchResult(
-	matchResult *matches.MatchResult,
+	ruleExecutionResult *models.RuleExecutionResult,
 	ruleId string,
 	target *models.Target,
 	requestURI string,
@@ -159,8 +157,8 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 		uuid.New(),
 		time.Now(),
 		target.ID, true,
-		matchResult.Elapsed,
-		models.LogTypeWAF,
+		ruleExecutionResult.MatchResult.Elapsed,
+		0,
 		ruleId,
 		requestURI,
 		ruleFor,

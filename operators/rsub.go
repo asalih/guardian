@@ -1,12 +1,8 @@
 package operators
 
-import (
-	"github.com/asalih/guardian/matches"
-)
-
 func (opMap *OperatorMap) loadRsub() {
-	opMap.funcMap["rsub"] = func(expression interface{}, variableData interface{}) *matches.MatchResult {
+	opMap.funcMap["rsub"] = func(expression interface{}, variableData interface{}) bool {
 		//TODO: might have to review
-		return matches.NewMatchResult(false)
+		return false
 	}
 }

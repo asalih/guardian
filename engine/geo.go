@@ -6,11 +6,11 @@ import (
 
 var GEO = "GEO"
 
-func (t *Transaction) loadGeo() *Transaction {
+func (t *TransactionMap) loadGeo() *TransactionMap {
 	t.variableMap[GEO] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
-			return matches.NewMatchResult(false)
+			return matches.NewMatchResult()
 		}}
 
 	return t

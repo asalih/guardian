@@ -9,7 +9,7 @@ var REQUEST_PROTOCOL = "REQUEST_PROTOCOL"
 var REQUEST_URI_RAW = "REQUEST_URI_RAW"
 var REQUEST_BASENAME = "REQUEST_BASENAME"
 
-func (t *Transaction) loadRequestUri() *Transaction {
+func (t *TransactionMap) loadRequestUri() *TransactionMap {
 
 	t.variableMap[REQUEST_URI] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {

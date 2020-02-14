@@ -3,13 +3,10 @@ package operators
 import (
 	"strconv"
 	"strings"
-
-	"github.com/asalih/guardian/matches"
 )
 
 func (opMap *OperatorMap) loadValidateByteRange() {
-	opMap.funcMap["validateByteRange"] = func(expression interface{}, variableData interface{}) *matches.MatchResult {
-		matchResult := matches.NewMatchResult(false)
+	opMap.funcMap["validateByteRange"] = func(expression interface{}, variableData interface{}) bool {
 
 		rangeMap := getRange(expression.(string))
 		data := []byte(variableData.(string))
@@ -17,12 +14,11 @@ func (opMap *OperatorMap) loadValidateByteRange() {
 		for i := 0; i < len(data); i++ {
 
 			if rangeMap[data[i]] == 0 {
-				matchResult.SetMatch(true)
-				break
+				return true
 			}
 		}
 
-		return matchResult
+		return false
 	}
 }
 

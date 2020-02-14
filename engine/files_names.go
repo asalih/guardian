@@ -7,14 +7,14 @@ import (
 var FILES_NAMES = "FILES_NAMES"
 var MULTIPART_FILENAME = "MULTIPART_FILENAME"
 
-func (t *Transaction) loadFilesNames() *Transaction {
+func (t *TransactionMap) loadFilesNames() *TransactionMap {
 	transData := &TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-		matchResult := matches.NewMatchResult(false)
+		matchResult := matches.NewMatchResult()
 
 		muliErr := executer.request.ParseMultipartForm(1024 * 1024 * 4)
 
 		if muliErr != nil {
-			return matchResult.SetMatch(true)
+			return matchResult.SetMatch(false)
 		}
 
 		files := executer.request.MultipartForm.File

@@ -6,10 +6,10 @@ import (
 
 var ARGS_COMBINED_SIZE = "ARGS_COMBINED_SIZE"
 
-func (t *Transaction) loadArgsCombinedSize() *Transaction {
+func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
 	t.variableMap[ARGS_COMBINED_SIZE] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			matchResult := matches.NewMatchResult(false)
+			matchResult := matches.NewMatchResult()
 
 			sizeOfParams := 0
 

@@ -8,10 +8,10 @@ import (
 
 var REQUEST_HEADERS = "REQUEST_HEADERS"
 
-func (t *Transaction) loadRequestHeaders() *Transaction {
+func (t *TransactionMap) loadRequestHeaders() *TransactionMap {
 	t.variableMap[REQUEST_HEADERS] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			matchResult := matches.NewMatchResult(false)
+			matchResult := matches.NewMatchResult()
 			httpData := executer.request.Header
 
 			if executer.variable.LengthCheckForCollection {

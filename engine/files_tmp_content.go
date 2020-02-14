@@ -6,11 +6,11 @@ import (
 
 var FILES_TMP_CONTENT = "FILES_TMP_CONTENT"
 
-func (t *Transaction) loadFilesTmpContent() *Transaction {
+func (t *TransactionMap) loadFilesTmpContent() *TransactionMap {
 	t.variableMap[FILES_TMP_CONTENT] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
-			return matches.NewMatchResult(false)
+			return matches.NewMatchResult()
 		}}
 
 	return t

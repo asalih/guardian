@@ -7,7 +7,7 @@ import (
 
 var QUERY_STRING = "QUERY_STRING"
 
-func (t *Transaction) loadQueryString() *Transaction {
+func (t *TransactionMap) loadQueryString() *TransactionMap {
 	t.variableMap[QUERY_STRING] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 

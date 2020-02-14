@@ -1,36 +1,41 @@
 package models
 
-type WafAction int
+type DisruptiveAction uint16
 
 const (
-	WafActionBlock = iota
-	WafActionAllow
-	WafActionRemove
-	WafActionLog
+	DisruptiveActionPass DisruptiveAction = iota
+	DisruptiveActionBlock
+	DisruptiveActionDrop
+	DisruptiveActionDeny
+	DisruptiveActionProxy
 )
 
+type LogAction uint16
+
 const (
-	LogTypeWAF = iota
-	LogTypeFirewall
+	LogActionLog LogAction = iota
+	LogActionNoLog
 )
 
 //ToString for waf action
-func (action WafAction) ToString() string {
-	return [...]string{"Block", "Allow", "Remove", "Log"}[action]
+func (action DisruptiveAction) ToString() string {
+	return [...]string{"pass", "block", "drop", "deny", "proxy"}[action]
 }
 
-//GetWafAction Gets the waf action with given action string
-func GetWafAction(action string) WafAction {
+//GetDisruptiveAction Gets the waf action with given action string
+func GetDisruptiveAction(action string) DisruptiveAction {
 	switch action {
+	case "pass":
+		return DisruptiveActionPass
 	case "block":
-		return 0
-	case "allow":
-		return 1
-	case "remove":
-		return 2
-	case "log":
-		return 3
+		return DisruptiveActionBlock
+	case "drop":
+		return DisruptiveActionDrop
+	case "deny":
+		return DisruptiveActionDeny
+	case "proxy":
+		return DisruptiveActionProxy
 	}
 
-	return 0
+	return DisruptiveActionBlock
 }

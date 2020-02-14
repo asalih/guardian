@@ -6,10 +6,10 @@ import (
 
 var FILES_COMBINED_SIZE = "FILES_COMBINED_SIZE"
 
-func (t *Transaction) loadFilesCombinedSize() *Transaction {
+func (t *TransactionMap) loadFilesCombinedSize() *TransactionMap {
 	t.variableMap[FILES_COMBINED_SIZE] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			matchResult := matches.NewMatchResult(false)
+			matchResult := matches.NewMatchResult()
 
 			muliErr := executer.request.ParseMultipartForm(1024 * 1024 * 4)
 

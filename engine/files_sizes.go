@@ -6,10 +6,10 @@ import (
 
 var FILES_SIZES = "FILES_SIZES"
 
-func (t *Transaction) loadFilesSizes() *Transaction {
+func (t *TransactionMap) loadFilesSizes() *TransactionMap {
 	t.variableMap[FILES_SIZES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			matchResult := matches.NewMatchResult(false)
+			matchResult := matches.NewMatchResult()
 
 			muliErr := executer.request.ParseMultipartForm(1024 * 1024 * 4)
 

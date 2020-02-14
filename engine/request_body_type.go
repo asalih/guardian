@@ -10,7 +10,7 @@ var REQUEST_BODY_TYPE = "REQUEST_BODY_TYPE"
 var MULTIPART_BOUNDARY = "MULTIPART_BOUNDARY"
 var MULTIPART_ERROR = "MULTIPART_ERROR"
 
-func (t *Transaction) loadRequestBodyType() *Transaction {
+func (t *TransactionMap) loadRequestBodyType() *TransactionMap {
 	t.variableMap[REQUEST_BODY_TYPE] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			contentType := executer.request.Header.Get("Content-Type")

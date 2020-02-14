@@ -6,11 +6,11 @@ import (
 
 var REQUEST_COOKIES = "REQUEST_COOKIES"
 
-func (t *Transaction) loadRequestCookies() *Transaction {
+func (t *TransactionMap) loadRequestCookies() *TransactionMap {
 
 	t.variableMap[REQUEST_COOKIES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			matchResult := matches.NewMatchResult(false)
+			matchResult := matches.NewMatchResult()
 			httpData := executer.request.Cookies()
 
 			if executer.variable.LengthCheckForCollection {

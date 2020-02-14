@@ -6,11 +6,11 @@ import (
 
 var ENV = "ENV"
 
-func (t *Transaction) loadEnv() *Transaction {
+func (t *TransactionMap) loadEnv() *TransactionMap {
 	t.variableMap[ENV] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
-			return matches.NewMatchResult(false)
+			return matches.NewMatchResult().SetMatch(false)
 		}}
 
 	return t
