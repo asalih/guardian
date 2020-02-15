@@ -40,5 +40,8 @@ jobs:
           name: Copy crs files
           command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/crs/*.conf root@165.227.244.17://applications/guardian/crs/
       - run:
+          name: Copy crs-data files
+          command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/crs/*.data root@165.227.244.17://applications/guardian/crs/
+      - run:
           name: Service Start
           command: ssh -o "StrictHostKeyChecking no" root@165.227.244.17 systemctl start guardian.service
