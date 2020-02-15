@@ -30,6 +30,7 @@ type TransactionExecuterModel struct {
 	variable        *models.Variable
 }
 
+//InitTransactionMap inits transaction map fns
 func InitTransactionMap() {
 	TransactionMaps = &TransactionMap{make(map[string]*TransactionData)}
 
@@ -55,17 +56,19 @@ func InitTransactionMap() {
 	TransactionMaps.loadQueryString()
 	TransactionMaps.loadRequestCookies()
 	TransactionMaps.loadRequestCookiesNames()
+	TransactionMaps.loadRequestFilename()
 	TransactionMaps.loadRequestHeaders()
 	TransactionMaps.loadRequestHeadersNames()
 	TransactionMaps.loadRequestBodyType()
 	TransactionMaps.loadRequestUri()
 }
 
-// NewRequestTransfer Initiates a new request variable object
+// NewTransaction Initiates a new request variable object
 func NewTransaction(request *http.Request) *Transaction {
 	return &Transaction{request}
 }
 
+//Get the data in transaction data
 func (tMap *TransactionMap) Get(key string) *TransactionData {
 	return tMap.variableMap[key]
 }
