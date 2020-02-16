@@ -1,4 +1,4 @@
-package models
+package parser
 
 import (
 	"bufio"
@@ -8,7 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/asalih/guardian/operators"
+	"github.com/asalih/guardian/waf/operators"
+
+	"github.com/asalih/guardian/models"
 )
 
 var xDirectives = []string{"SecAction", "SecArgumentSeparator", "SecAuditEngine", "SecAuditLog", "SecAuditLog2", "SecAuditLogDirMode",
@@ -26,9 +28,6 @@ var xDirectives = []string{"SecAction", "SecArgumentSeparator", "SecAuditEngine"
 	"SecRuleUpdateTargetByTag", "SecServerSignature", "SecStatusEngine", "SecStreamInBodyInspection", "SecStreamOutBodyInspection", "SecTmpDir",
 	"SecUnicodeMapFile", "SecUnicodeCodePage", "SecUploadDir", "SecUploadFileLimit", "SecUploadFileMode", "SecUploadKeepFiles",
 	"SecWebAppId", "SecXmlExternalEntity"}
-
-//RulesCollection Rules collection
-var RulesCollection []*Rule
 
 //InitRulesCollection Rules data initializer
 func InitRulesCollection() {
@@ -74,16 +73,16 @@ func InitRulesCollectionFile(path string) {
 	for i := 0; i < plainTextRulesLen; i++ {
 		row := plainTextRules[i]
 		if strings.HasPrefix(row, "SecRule") {
-			var rule *Rule
+			var rule *models.Rule
 			rule, i = walk(plainTextRules, i, plainTextRulesLen)
-			RulesCollection = append(RulesCollection, rule)
+			models.RulesCollection = append(models.RulesCollection, rule)
 		}
 	}
 }
 
-func walk(plainTextRules []string, i int, plainTextRulesLen int) (*Rule, int) {
+func walk(plainTextRules []string, i int, plainTextRulesLen int) (*models.Rule, int) {
 	row := plainTextRules[i]
-	var chainRule *Rule
+	var chainRule *models.Rule
 	for {
 		li := i + 1
 
@@ -125,7 +124,7 @@ func walk(plainTextRules []string, i int, plainTextRulesLen int) (*Rule, int) {
 	return rule, i
 }
 
-func parseRule(ruleTxt string) *Rule {
+func parseRule(ruleTxt string) *models.Rule {
 
 	variablesReg := regexp.MustCompile(`SecRule\s(.*?)\s`)
 	operatorReg := regexp.MustCompile(`(\"@?.*?\")\s+?`)
@@ -141,13 +140,13 @@ func parseRule(ruleTxt string) *Rule {
 	operators := parseOperators(operatorMatch)
 	action := parseAction(operatorReg.ReplaceAllString(variablesReg.ReplaceAllString(ruleTxt, ""), ""))
 
-	return NewRule(variables, operators, action, nil)
+	return models.NewRule(variables, operators, action, nil)
 }
 
-func parseVariables(variable string) []*Variable {
+func parseVariables(variable string) []*models.Variable {
 	variable = strings.ReplaceAll(variable, "SecRule ", "")
 	varsSplit := strings.Split(variable, "|")
-	var dataVariable []*Variable
+	var dataVariable []*models.Variable
 
 	for _, vars := range varsSplit {
 		varsAndFilter := strings.Split(vars, ":")
@@ -157,7 +156,7 @@ func parseVariables(variable string) []*Variable {
 			continue
 		}
 
-		var v *Variable
+		var v *models.Variable
 
 		isLengthCheck := varsAndFilter[0][0] == '&'
 		if len(varsAndFilter) > 1 {
@@ -168,7 +167,7 @@ func parseVariables(variable string) []*Variable {
 				varName = varName[1:]
 			}
 
-			v = &Variable{varName, strings.Split(strings.Trim(varsAndFilter[1], " "), ","), isNotType, isLengthCheck}
+			v = &models.Variable{varName, strings.Split(strings.Trim(varsAndFilter[1], " "), ","), isNotType, isLengthCheck}
 		} else {
 			varName := strings.Trim(varsAndFilter[0], " ")
 
@@ -176,7 +175,7 @@ func parseVariables(variable string) []*Variable {
 				varName = varName[1:]
 			}
 
-			v = &Variable{varName, nil, false, isLengthCheck}
+			v = &models.Variable{varName, nil, false, isLengthCheck}
 		}
 
 		dataVariable = append(dataVariable, v)
@@ -185,7 +184,7 @@ func parseVariables(variable string) []*Variable {
 	return dataVariable
 }
 
-func parseOperators(operator string) *Operator {
+func parseOperators(operator string) *models.Operator {
 	isNotOperator := strings.HasPrefix(operator, `"!`)
 	isOperatorSpec := false
 
@@ -216,12 +215,13 @@ func parseOperators(operator string) *Operator {
 		parsedExpression = strings.TrimLeft(parsedExpression, "@! ")
 	}
 
-	return &Operator{parsedOperator, parsedExpression, isNotOperator}
+	return &models.Operator{parsedOperator, parsedExpression, isNotOperator}
 }
 
-func parseAction(action string) *Action {
+func parseAction(action string) *models.Action {
 	idReg := regexp.MustCompile(`id:(.*?),`)
 	phaseReg := regexp.MustCompile(`phase:(.*?),`)
+	transformReg := regexp.MustCompile(`t:(.*?),`)
 
 	idRegMatch := idReg.FindStringSubmatch(action)
 	idRegIdentified := "-1"
@@ -237,17 +237,24 @@ func parseAction(action string) *Action {
 		phaseRegIdentified, _ = strconv.Atoi(phaseRegMatch[1])
 	}
 
-	disrupAct := DisruptiveActionBlock
+	disrupAct := models.DisruptiveActionBlock
 
-	if strings.Contains(action, DisruptiveActionPass.ToString()+",") {
-		disrupAct = DisruptiveActionPass
-	} else if strings.Contains(action, DisruptiveActionDrop.ToString()+",") {
-		disrupAct = DisruptiveActionDrop
-	} else if strings.Contains(action, DisruptiveActionDeny.ToString()+",") {
-		disrupAct = DisruptiveActionDeny
-	} else if strings.Contains(action, DisruptiveActionProxy.ToString()+",") {
-		disrupAct = DisruptiveActionProxy
+	if strings.Contains(action, models.DisruptiveActionPass.ToString()+",") {
+		disrupAct = models.DisruptiveActionPass
+	} else if strings.Contains(action, models.DisruptiveActionDrop.ToString()+",") {
+		disrupAct = models.DisruptiveActionDrop
+	} else if strings.Contains(action, models.DisruptiveActionDeny.ToString()+",") {
+		disrupAct = models.DisruptiveActionDeny
+	} else if strings.Contains(action, models.DisruptiveActionProxy.ToString()+",") {
+		disrupAct = models.DisruptiveActionProxy
 	}
 
-	return &Action{idRegIdentified, phaseRegIdentified, disrupAct, LogActionLog}
+	transformMatch := transformReg.FindStringSubmatch(action)
+	var transforms []string
+
+	if len(transformMatch) > 1 {
+		transforms = append(transforms, transformMatch[1])
+	}
+
+	return &models.Action{idRegIdentified, phaseRegIdentified, transforms, disrupAct, models.LogActionLog}
 }

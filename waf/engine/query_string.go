@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"github.com/asalih/guardian/helpers"
 	"github.com/asalih/guardian/matches"
 )
 
@@ -11,9 +10,7 @@ func (t *TransactionMap) loadQueryString() *TransactionMap {
 	t.variableMap[QUERY_STRING] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
-			httpData := helpers.UnEscapeRawValue(executer.request.URL.RawQuery)
-
-			return executer.rule.ExecuteRule(httpData)
+			return executer.rule.ExecuteRule(executer.request.URL.RawQuery)
 		}}
 
 	return t

@@ -13,9 +13,9 @@ import (
 	"github.com/PaesslerAG/gval"
 
 	"github.com/asalih/guardian/data"
-	"github.com/asalih/guardian/engine"
 	"github.com/asalih/guardian/helpers"
 	"github.com/asalih/guardian/models"
+	"github.com/asalih/guardian/waf/engine"
 )
 
 var staticSuffix = []string{".js", ".css", ".png", ".jpg", ".gif", ".bmp", ".svg", ".ico"}

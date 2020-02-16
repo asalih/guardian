@@ -1,9 +1,11 @@
 package main
 
 import (
-	"github.com/asalih/guardian/engine"
 	"github.com/asalih/guardian/models"
-	"github.com/asalih/guardian/operators"
+	"github.com/asalih/guardian/waf/engine"
+	"github.com/asalih/guardian/waf/operators"
+	"github.com/asalih/guardian/waf/parser"
+	"github.com/asalih/guardian/waf/transformations"
 )
 
 func main() {
@@ -12,9 +14,10 @@ func main() {
 
 	engine.InitTransactionMap()
 	operators.InitOperatorMap()
-	models.InitRulesCollection()
+	transformations.InitTransformationMap()
+
+	parser.InitRulesCollection()
 
 	srv := NewHTTPServer()
-
 	srv.ServeHTTP()
 }

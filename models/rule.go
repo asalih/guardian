@@ -3,11 +3,15 @@ package models
 import (
 	"fmt"
 
+	"github.com/asalih/guardian/waf/operators"
+
 	"github.com/asalih/guardian/matches"
-	"github.com/asalih/guardian/operators"
 )
 
 //SecRule VARIABLES OPERATOR [ACTIONS]
+
+//RulesCollection Rules collection
+var RulesCollection []*Rule
 
 //Rule the rule model
 type Rule struct {
@@ -38,6 +42,10 @@ func (rule *Rule) ExecuteRule(variableData interface{}) *matches.MatchResult {
 		//TODO Handle unrecognized fn
 		fmt.Println("Unrecognized Operator fn" + rule.Operator.Func)
 		return matches.NewMatchResult()
+	}
+
+	if rule.Action != nil {
+		variableData = rule.Action.ExecuteTransformation(variableData)
 	}
 
 	operatorResult := fn(rule.Operator.Expression, variableData)
