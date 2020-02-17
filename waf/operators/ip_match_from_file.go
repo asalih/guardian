@@ -1,9 +1,8 @@
 package operators
 
 import (
-	"bufio"
 	"net"
-	"os"
+
 	"strings"
 )
 
@@ -11,19 +10,13 @@ func (opMap *OperatorMap) loadIPMatchFromFile() {
 	fn := func(expression interface{}, variableData interface{}) bool {
 
 		remoteAddressIp := net.ParseIP(variableData.(string))
-		dataFile, err := os.Open(RulesAndDatasPath + expression.(string))
+		fileCache := DataFileCaches[expression.(string)]
 
-		if remoteAddressIp == nil || err != nil {
+		if remoteAddressIp == nil || fileCache == nil {
 			return false
 		}
 
-		scanner := bufio.NewScanner(dataFile)
-		for scanner.Scan() {
-			ip := scanner.Text()
-
-			if ip == "" || strings.HasPrefix(ip, "#") {
-				continue
-			}
+		for _, ip := range fileCache.Lines {
 
 			isCidrBlock := strings.Contains(ip, "/")
 

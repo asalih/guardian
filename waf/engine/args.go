@@ -39,7 +39,7 @@ func (t *TransactionMap) loadArgs() *TransactionMap {
 func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePost bool) *matches.MatchResult {
 	matchResult := matches.NewMatchResult()
 	if executeGet {
-		queries := executer.request.URL.Query()
+		queries := executer.transaction.request.URL.Query()
 		for q := range queries {
 			if executer.variable.ShouldPassCheck(q) {
 				continue
@@ -56,14 +56,14 @@ func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePos
 	}
 
 	if executePost {
-		err := executer.request.ParseForm()
+		err := executer.transaction.request.ParseForm()
 
 		if err != nil {
 			matchResult.SetMatch(true)
 			return matchResult
 		}
 
-		form := executer.request.Form
+		form := executer.transaction.request.Form
 
 		for f := range form {
 			if executer.variable.ShouldPassCheck(f) {
@@ -86,7 +86,7 @@ func argsLengthHandler(executer *TransactionExecuterModel, executeGet bool, exec
 	matchResult := matches.NewMatchResult()
 	lengthOfParams := 0
 	if executeGet {
-		queries := executer.request.URL.Query()
+		queries := executer.transaction.request.URL.Query()
 		for q := range queries {
 			if executer.variable.ShouldPassCheck(q) {
 				continue
@@ -96,14 +96,14 @@ func argsLengthHandler(executer *TransactionExecuterModel, executeGet bool, exec
 	}
 
 	if executePost {
-		err := executer.request.ParseForm()
+		err := executer.transaction.request.ParseForm()
 
 		if err != nil {
 			matchResult.SetMatch(true)
 			return matchResult
 		}
 
-		form := executer.request.Form
+		form := executer.transaction.request.Form
 
 		for f := range form {
 			if executer.variable.ShouldPassCheck(f) {

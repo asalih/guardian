@@ -13,14 +13,14 @@ func (t *TransactionMap) loadRequestUri() *TransactionMap {
 
 	t.variableMap[REQUEST_URI] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			return executer.rule.ExecuteRule(executer.request.RequestURI)
+			return executer.rule.ExecuteRule(executer.transaction.request.RequestURI)
 		}}
 
 	t.variableMap[REQUEST_PROTOCOL] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			proto := "http"
-			if executer.request.TLS != nil {
+			if executer.transaction.request.TLS != nil {
 				proto = "https"
 			}
 
@@ -31,10 +31,10 @@ func (t *TransactionMap) loadRequestUri() *TransactionMap {
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			uriRaw := ""
-			if executer.request.TLS != nil {
-				uriRaw = "https://" + executer.request.Host + executer.request.RequestURI
+			if executer.transaction.request.TLS != nil {
+				uriRaw = "https://" + executer.transaction.request.Host + executer.transaction.request.RequestURI
 			} else {
-				uriRaw = "http://" + executer.request.Host + executer.request.RequestURI
+				uriRaw = "http://" + executer.transaction.request.Host + executer.transaction.request.RequestURI
 			}
 
 			return executer.rule.ExecuteRule(uriRaw)
@@ -42,7 +42,7 @@ func (t *TransactionMap) loadRequestUri() *TransactionMap {
 
 	t.variableMap[REQUEST_BASENAME] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			return executer.rule.ExecuteRule(executer.request.URL.Path)
+			return executer.rule.ExecuteRule(executer.transaction.request.URL.Path)
 		}}
 
 	return t

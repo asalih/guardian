@@ -127,7 +127,7 @@ func walk(plainTextRules []string, i int, plainTextRulesLen int) (*models.Rule, 
 func parseRule(ruleTxt string) *models.Rule {
 
 	variablesReg := regexp.MustCompile(`SecRule\s(.*?)\s`)
-	operatorReg := regexp.MustCompile(`(\"@?.*?\")\s+?`)
+	operatorReg := regexp.MustCompile(`(\"@?.*?\")`)
 
 	variablesMatch := variablesReg.FindString(ruleTxt)
 	operatorMatch := operatorReg.FindString(ruleTxt)
@@ -198,7 +198,7 @@ func parseOperators(operator string) *models.Operator {
 	parsedExpression := ""
 
 	if isOperatorSpec {
-		operatorReg := regexp.MustCompile(`@(.*?)\s`)
+		operatorReg := regexp.MustCompile(`@(.*?)`)
 		opMatch := operatorReg.FindStringSubmatch(operator)
 
 		opr := strings.NewReplacer("\"", "")

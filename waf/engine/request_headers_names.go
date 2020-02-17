@@ -11,7 +11,7 @@ func (t *TransactionMap) loadRequestHeadersNames() *TransactionMap {
 	t.variableMap[REQUEST_HEADERS_NAMES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
-			httpData := helpers.GetHeadersNames(executer.request.Header)
+			httpData := helpers.GetHeadersNames(executer.transaction.request.Header)
 
 			matchResult := matches.NewMatchResult()
 

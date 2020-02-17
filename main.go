@@ -8,15 +8,18 @@ import (
 	"github.com/asalih/guardian/waf/transformations"
 )
 
-func main() {
-
+func init() {
 	models.InitConfig()
 
 	engine.InitTransactionMap()
 	operators.InitOperatorMap()
 	transformations.InitTransformationMap()
 
+	parser.InitDataFiles()
 	parser.InitRulesCollection()
+}
+
+func main() {
 
 	srv := NewHTTPServer()
 	srv.ServeHTTP()

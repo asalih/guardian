@@ -1,39 +1,36 @@
 package engine
 
 import (
-	"github.com/asalih/guardian/helpers"
 	"github.com/asalih/guardian/matches"
 )
 
-var REQUEST_COOKIES_NAMES = "REQUEST_COOKIES_NAMES"
+var TX = "TX"
 
-func (t *TransactionMap) loadRequestCookiesNames() *TransactionMap {
-
-	t.variableMap[REQUEST_COOKIES_NAMES] =
+func (t *TransactionMap) loadTX() *TransactionMap {
+	t.variableMap[TX] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
-			httpData := helpers.GetCookiesNames(executer.transaction.request.Cookies())
-
 			matchResult := matches.NewMatchResult()
+			httpData := executer.transaction.tx
 
 			if executer.variable.LengthCheckForCollection {
-				lenOfCookies := 0
-				for _, key := range httpData {
+				lenOfHeaders := 0
+				for key, _ := range httpData {
 					if executer.variable.ShouldPassCheck(key) {
 						continue
 					}
 
-					lenOfCookies++
+					lenOfHeaders++
 				}
 
-				return executer.rule.ExecuteRule(lenOfCookies)
+				return executer.rule.ExecuteRule(lenOfHeaders)
 			}
 
-			for _, key := range httpData {
+			for key, value := range httpData {
 				if executer.variable.ShouldPassCheck(key) {
 					continue
 				}
-				matchResult = executer.rule.ExecuteRule(key)
+				matchResult = executer.rule.ExecuteRule(value)
 
 				if matchResult.IsMatched {
 					return matchResult

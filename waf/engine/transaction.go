@@ -17,6 +17,7 @@ type TransactionMap struct {
 
 type Transaction struct {
 	request *http.Request
+	tx      map[string]interface{}
 }
 
 type TransactionData struct {
@@ -24,10 +25,9 @@ type TransactionData struct {
 }
 
 type TransactionExecuterModel struct {
-	request         *http.Request
-	transactionData *TransactionData
-	rule            *models.Rule
-	variable        *models.Variable
+	transaction *Transaction
+	rule        *models.Rule
+	variable    *models.Variable
 }
 
 //InitTransactionMap inits transaction map fns
@@ -61,11 +61,12 @@ func InitTransactionMap() {
 	TransactionMaps.loadRequestHeadersNames()
 	TransactionMaps.loadRequestBodyType()
 	TransactionMaps.loadRequestUri()
+	TransactionMaps.loadTX()
 }
 
 // NewTransaction Initiates a new request variable object
 func NewTransaction(request *http.Request) *Transaction {
-	return &Transaction{request}
+	return &Transaction{request, make(map[string]interface{})}
 }
 
 //Get the data in transaction data
@@ -87,7 +88,7 @@ func (t *Transaction) Execute(rule *models.Rule) *matches.MatchResult {
 			return nil
 		}
 
-		executerModel := &TransactionExecuterModel{t.request, mapData, rule, variable}
+		executerModel := &TransactionExecuterModel{t, rule, variable}
 		matchResult = mapData.executer(executerModel)
 
 		if matchResult.IsMatched && !variable.FilterIsNotType && !rule.Operator.OperatorIsNotType {

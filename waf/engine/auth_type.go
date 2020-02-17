@@ -9,7 +9,7 @@ var AUTH_TYPE = "AUTH_TYPE"
 func (t *TransactionMap) loadAuthType() *TransactionMap {
 	t.variableMap[AUTH_TYPE] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			headerValue := executer.request.Header.Get("Authorization")
+			headerValue := executer.transaction.request.Header.Get("Authorization")
 
 			return executer.rule.ExecuteRule(headerValue)
 		}}

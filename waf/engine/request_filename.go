@@ -12,7 +12,7 @@ func (t *TransactionMap) loadRequestFilename() *TransactionMap {
 	t.variableMap[REQUEST_FILENAME] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
-			httpData := executer.request.URL.Path
+			httpData := executer.transaction.request.URL.Path
 			if !strings.HasSuffix(httpData, "/") {
 				httpData += "/"
 			}
