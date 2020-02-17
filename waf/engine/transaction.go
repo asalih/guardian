@@ -61,6 +61,7 @@ func InitTransactionMap() {
 	TransactionMaps.loadRequestHeadersNames()
 	TransactionMaps.loadRequestBodyType()
 	TransactionMaps.loadRequestUri()
+	TransactionMaps.loadRequestMethod()
 	TransactionMaps.loadTX()
 }
 
@@ -91,20 +92,21 @@ func (t *Transaction) Execute(rule *models.Rule) *matches.MatchResult {
 		executerModel := &TransactionExecuterModel{t, rule, variable}
 		matchResult = mapData.executer(executerModel)
 
-		if matchResult.IsMatched && !variable.FilterIsNotType && !rule.Operator.OperatorIsNotType {
+		if matchResult.IsMatched {
 			if rule.Chain != nil {
 				matchResult = t.Execute(rule.Chain)
 
 				if matchResult == nil {
 					continue
 				}
-
-				if matchResult.IsMatched {
-					return matchResult
-				}
-			} else {
-				return matchResult
 			}
+
+			if !variable.FilterIsNotType && !rule.Operator.OperatorIsNotType {
+				return matchResult
+			} else {
+				matchResult.SetMatch(false)
+			}
+
 		} else if !matchResult.IsMatched && !matchResult.DefaultState && (variable.FilterIsNotType || rule.Operator.OperatorIsNotType) {
 			return matchResult.SetMatch(true)
 		}

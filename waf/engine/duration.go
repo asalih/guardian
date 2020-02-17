@@ -10,7 +10,7 @@ func (t *TransactionMap) loadDuration() *TransactionMap {
 	t.variableMap[DURATION] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
-			return matches.NewMatchResult().SetMatch(false)
+			return matches.NewMatchResult().SetMatch(true)
 		}}
 
 	return t

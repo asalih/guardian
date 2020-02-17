@@ -83,6 +83,7 @@ func InitRulesCollectionFile(path string) {
 func walk(plainTextRules []string, i int, plainTextRulesLen int) (*models.Rule, int) {
 	row := plainTextRules[i]
 	var chainRule *models.Rule
+	chainWait := false
 	for {
 		li := i + 1
 
@@ -92,8 +93,13 @@ func walk(plainTextRules []string, i int, plainTextRulesLen int) (*models.Rule, 
 
 		lr := plainTextRules[li]
 
+		if strings.HasPrefix(lr, "chain") || strings.HasPrefix(lr, "\"chain") {
+			chainWait = true
+		}
+
 		if strings.HasPrefix(lr, "SecRule") {
-			if strings.HasPrefix(plainTextRules[li-1], "chain") || strings.HasPrefix(plainTextRules[li-1], "\"chain") {
+			if chainWait {
+				chainWait = false
 				chainRule, i = walk(plainTextRules, li, plainTextRulesLen)
 			}
 			break
@@ -138,7 +144,7 @@ func parseRule(ruleTxt string) *models.Rule {
 
 	variables := parseVariables(variablesMatch)
 	operators := parseOperators(operatorMatch)
-	action := parseAction(operatorReg.ReplaceAllString(variablesReg.ReplaceAllString(ruleTxt, ""), ""))
+	action := parseAction(strings.ReplaceAll(strings.ReplaceAll(ruleTxt, operatorMatch, ""), variablesMatch, ""))
 
 	return models.NewRule(variables, operators, action, nil)
 }
@@ -198,10 +204,11 @@ func parseOperators(operator string) *models.Operator {
 	parsedExpression := ""
 
 	if isOperatorSpec {
-		operatorReg := regexp.MustCompile(`@(.*?)`)
+		operatorReg := regexp.MustCompile(`@(.*?)(\s|\")`)
 		opMatch := operatorReg.FindStringSubmatch(operator)
 
 		opr := strings.NewReplacer("\"", "")
+
 		parsedOperator = opr.Replace(opMatch[1])
 
 		r := strings.NewReplacer(parsedOperator, "")
