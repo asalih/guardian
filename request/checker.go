@@ -124,6 +124,7 @@ func (r *Checker) handleWAFChecker() bool {
 
 		for _, rule := range models.RulesCollection {
 
+			//ruleStartTime := time.Now()
 			matchResult := r.Transaction.Execute(rule)
 
 			if matchResult == nil {
@@ -138,6 +139,11 @@ func (r *Checker) handleWAFChecker() bool {
 				r.result = &models.RuleExecutionResult{matchResult, rule}
 				break
 			}
+
+			//passed := helpers.CalcTime(ruleStartTime, time.Now())
+			//if passed > 0 {
+			//	fmt.Println(rule.Action.ID + " took " + strconv.FormatInt(passed, 10) + " ms.")
+			//}
 		}
 
 		done <- true

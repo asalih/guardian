@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/asalih/guardian/helpers"
+
 	"github.com/asalih/guardian/waf/operators"
 )
 
@@ -30,7 +32,7 @@ func initDataFile(name string) {
 		panic(err)
 	}
 
-	fileCache := &operators.DataFileCache{name, nil}
+	fileCache := &operators.DataFileCache{name, nil, nil}
 	scanner := bufio.NewScanner(dataFile)
 
 	for scanner.Scan() {
@@ -49,5 +51,8 @@ func initDataFile(name string) {
 		fileCache.Lines = append(fileCache.Lines, readLine)
 	}
 
+	if len(fileCache.Lines) > 0 {
+		fileCache.Matcher = helpers.NewStringMatcher(fileCache.Lines)
+	}
 	operators.DataFileCaches[name] = fileCache
 }

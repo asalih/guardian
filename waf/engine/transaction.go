@@ -62,7 +62,10 @@ func InitTransactionMap() {
 	TransactionMaps.loadRequestBodyType()
 	TransactionMaps.loadRequestUri()
 	TransactionMaps.loadRequestMethod()
+	TransactionMaps.loadRemoteAddr()
 	TransactionMaps.loadTX()
+	TransactionMaps.loadIP()  //Not implemented
+	TransactionMaps.loadXML() //Not implemented
 }
 
 // NewTransaction Initiates a new request variable object
