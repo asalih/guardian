@@ -18,4 +18,8 @@ func InitTransformationMap() {
 	TransformationMaps.loadUrlDecode()
 	TransformationMaps.loadUrlDecodeUni() //TODO Review it
 	TransformationMaps.loadNone()
+	TransformationMaps.loadBase64Decode()
+	TransformationMaps.loadSQLHexDecode()    // Not implemented
+	TransformationMaps.loadBase64DecodeExt() // Not implemented
+	TransformationMaps.loadBase64Encode()
 }
