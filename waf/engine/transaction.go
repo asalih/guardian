@@ -107,7 +107,7 @@ func (t *Transaction) Execute(rule *models.Rule) *matches.MatchResult {
 
 			if !variable.FilterIsNotType && !rule.Operator.OperatorIsNotType {
 				return matchResult
-			} else {
+			} else if !matchResult.DefaultState {
 				matchResult.SetMatch(false)
 			}
 
