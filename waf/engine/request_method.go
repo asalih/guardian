@@ -10,7 +10,7 @@ func (t *TransactionMap) loadRequestMethod() *TransactionMap {
 	t.variableMap[REQUEST_METHOD] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
-			return executer.rule.ExecuteRule(executer.transaction.request.Method)
+			return executer.rule.ExecuteRule(executer.transaction.Request.Method)
 		}}
 
 	return t

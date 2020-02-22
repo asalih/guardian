@@ -11,13 +11,13 @@ func (t *TransactionMap) loadFilesNames() *TransactionMap {
 	transData := &TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 		matchResult := matches.NewMatchResult()
 
-		muliErr := executer.transaction.request.ParseMultipartForm(1024 * 1024 * 4)
+		muliErr := executer.transaction.Request.ParseMultipartForm(1024 * 1024 * 4)
 
 		if muliErr != nil {
 			return matchResult.SetMatch(false)
 		}
 
-		files := executer.transaction.request.MultipartForm.File
+		files := executer.transaction.Request.MultipartForm.File
 		for _, headers := range files {
 			for _, head := range headers {
 				matchResult = executer.rule.ExecuteRule(head.Filename)

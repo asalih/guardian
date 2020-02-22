@@ -23,7 +23,6 @@ var staticSuffix = []string{".js", ".css", ".png", ".jpg", ".gif", ".bmp", ".svg
 /*Checker Cheks the requests init*/
 type Checker struct {
 	ResponseWriter http.ResponseWriter
-	Request        *http.Request
 	Target         *models.Target
 	Transaction    *engine.Transaction
 
@@ -34,18 +33,23 @@ type Checker struct {
 
 /*NewRequestChecker Request checker initializer*/
 func NewRequestChecker(w http.ResponseWriter, r *http.Request, target *models.Target) *Checker {
-	return &Checker{w, r, target, nil, nil, nil, time.Now()}
+	return &Checker{w, target, engine.NewTransaction(r), nil, nil, time.Now()}
 }
 
 /*Handle Request checker handler func*/
 func (r *Checker) Handle() bool {
 
-	if !r.Target.WAFEnabled || r.Request.Method == "GET" && r.IsStaticResource(r.Request.URL.Path) {
+	if !r.Target.WAFEnabled || r.Transaction.Request.Method == "GET" && r.IsStaticResource(r.Transaction.Request.URL.Path) {
 		return false
 	}
 
-	r.Transaction = engine.NewTransaction(r.Request)
-	result := r.handleWAFChecker()
+	result := r.handleWAFChecker(1)
+
+	if result {
+		return result
+	}
+
+	result = r.handleWAFChecker(2)
 
 	if result {
 		return result
@@ -83,16 +87,16 @@ func (r *Checker) handleFirewallRuleChecker() bool {
 
 		mapForFwRules := map[string]interface{}{
 			"ip": map[string]interface{}{
-				"src": r.Request.RemoteAddr,
+				"src": r.Transaction.Request.RemoteAddr,
 			},
 			"http": map[string]interface{}{
-				"query":    r.Request.URL.RawQuery,
-				"path":     r.Request.URL.Path,
-				"host":     r.Request.URL.Host,
-				"cookie":   helpers.CookiesToString(r.Request.Cookies()),
-				"header":   helpers.HeadersToString(r.Request.Header),
-				"method":   r.Request.Method,
-				"protocol": r.Request.Proto,
+				"query":    r.Transaction.Request.URL.RawQuery,
+				"path":     r.Transaction.Request.URL.Path,
+				"host":     r.Transaction.Request.URL.Host,
+				"cookie":   helpers.CookiesToString(r.Transaction.Request.Cookies()),
+				"header":   helpers.HeadersToString(r.Transaction.Request.Header),
+				"method":   r.Transaction.Request.Method,
+				"protocol": r.Transaction.Request.Proto,
 			},
 		}
 
@@ -116,13 +120,13 @@ func (r *Checker) handleFirewallRuleChecker() bool {
 	return false
 }
 
-func (r *Checker) handleWAFChecker() bool {
+func (r *Checker) handleWAFChecker(phase int) bool {
 
 	done := make(chan bool, 1)
 
 	go func() {
 
-		for _, rule := range models.RulesCollection {
+		for _, rule := range models.RulesCollection[phase] {
 
 			//ruleStartTime := time.Now()
 			matchResult := r.Transaction.Execute(rule)
@@ -130,7 +134,7 @@ func (r *Checker) handleWAFChecker() bool {
 			if matchResult == nil {
 				continue
 			}
-			//TODO : Implement Operator Is Not filter
+
 			if matchResult.IsMatched && rule.ShouldBlock() {
 				r.result = &models.RuleExecutionResult{matchResult, rule}
 				break
@@ -140,6 +144,7 @@ func (r *Checker) handleWAFChecker() bool {
 				break
 			}
 
+			//Line 127 and below commented lines are for calculating each rulr exec time
 			//passed := helpers.CalcTime(ruleStartTime, time.Now())
 			//if passed > 0 {
 			//	fmt.Println(rule.Action.ID + " took " + strconv.FormatInt(passed, 10) + " ms.")
@@ -157,11 +162,11 @@ func (r *Checker) handleWAFChecker() bool {
 
 	if r.result != nil && r.result.MatchResult.IsMatched {
 		r.ResponseWriter.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", url.QueryEscape(r.Request.URL.Path))
+		fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", url.QueryEscape(r.Transaction.Request.URL.Path))
 
 		if r.result.Rule.Action.LogAction == models.LogActionLog {
 			db := &data.DBHelper{}
-			go db.LogMatchResult(r.result, "TEMP", r.Target, r.Request.RequestURI, false)
+			go db.LogMatchResult(r.result, "TEMP", r.Target, r.Transaction.Request.RequestURI, false)
 		}
 
 		return true
@@ -179,6 +184,5 @@ func (r *Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules
 		fmt.Println(everr)
 	}
 
-	//r.firewallResult <- models.NewFirewallMatchResult(rule, evalResult.(bool)).Time(r.time)
 	r.firewallResult <- matches.NewFirewallMatchResult(evalResult.(bool))
 }

@@ -11,7 +11,7 @@ func (t *TransactionMap) loadRequestCookies() *TransactionMap {
 	t.variableMap[REQUEST_COOKIES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
-			httpData := executer.transaction.request.Cookies()
+			httpData := executer.transaction.Request.Cookies()
 
 			if executer.variable.LengthCheckForCollection {
 

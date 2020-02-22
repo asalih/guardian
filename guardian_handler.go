@@ -80,7 +80,8 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	httpLog := models.NewHTTPLog()
 
-	requestIsNotSafe := request.NewRequestChecker(w, r, target).Handle()
+	requestChecker := request.NewRequestChecker(w, r, target)
+	requestIsNotSafe := requestChecker.Handle()
 
 	httpLog = httpLog.RequestRulesExecutionEnd()
 
@@ -114,7 +115,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	httpLog.ResponseRulesExecutionStart()
 
-	responseIsNotSafe := response.NewResponseChecker(w, r, transportResponse, target).Handle()
+	responseIsNotSafe := response.NewResponseChecker(w, requestChecker.Transaction, transportResponse, target).Handle()
 
 	httpLog = httpLog.ResponseRulesExecutionEnd()
 

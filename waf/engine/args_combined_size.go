@@ -13,7 +13,7 @@ func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
 
 			sizeOfParams := 0
 
-			queries := executer.transaction.request.URL.Query()
+			queries := executer.transaction.Request.URL.Query()
 			for q := range queries {
 				if executer.variable.ShouldPassCheck(q) {
 					continue
@@ -22,14 +22,14 @@ func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
 				sizeOfParams += len(queries[q])
 			}
 
-			err := executer.transaction.request.ParseForm()
+			err := executer.transaction.Request.ParseForm()
 
 			if err != nil {
 				matchResult.SetMatch(true)
 				return matchResult
 			}
 
-			form := executer.transaction.request.Form
+			form := executer.transaction.Request.Form
 
 			for f := range form {
 				if executer.variable.ShouldPassCheck(f) {

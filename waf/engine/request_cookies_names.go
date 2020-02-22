@@ -12,7 +12,7 @@ func (t *TransactionMap) loadRequestCookiesNames() *TransactionMap {
 	t.variableMap[REQUEST_COOKIES_NAMES] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
-			httpData := helpers.GetCookiesNames(executer.transaction.request.Cookies())
+			httpData := helpers.GetCookiesNames(executer.transaction.Request.Cookies())
 
 			matchResult := matches.NewMatchResult()
 

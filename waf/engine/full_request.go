@@ -14,14 +14,14 @@ var FULL_REQUEST_LENGTH = "FULL_REQUEST_LENGTH"
 func (t *TransactionMap) loadFullRequestAndLength() *TransactionMap {
 	t.variableMap[FULL_REQUEST] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			httpData := formatRequest(executer.transaction.request)
+			httpData := formatRequest(executer.transaction.Request)
 
 			return executer.rule.ExecuteRule(httpData)
 		}}
 
 	t.variableMap[FULL_REQUEST_LENGTH] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			httpData := len(formatRequest(executer.transaction.request))
+			httpData := len(formatRequest(executer.transaction.Request))
 
 			return executer.rule.ExecuteRule(httpData)
 		}}

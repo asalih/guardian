@@ -75,7 +75,7 @@ func InitRulesCollectionFile(path string) {
 		if strings.HasPrefix(row, "SecRule") {
 			var rule *models.Rule
 			rule, i = walk(plainTextRules, i, plainTextRulesLen)
-			models.RulesCollection = append(models.RulesCollection, rule)
+			models.RulesCollection[rule.Action.Phase] = append(models.RulesCollection[rule.Action.Phase], rule)
 		}
 	}
 }

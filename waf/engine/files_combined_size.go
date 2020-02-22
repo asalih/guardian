@@ -11,13 +11,13 @@ func (t *TransactionMap) loadFilesCombinedSize() *TransactionMap {
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
 
-			muliErr := executer.transaction.request.ParseMultipartForm(1024 * 1024 * 4)
+			muliErr := executer.transaction.Request.ParseMultipartForm(1024 * 1024 * 4)
 
 			if muliErr != nil {
 				return matchResult.SetMatch(true)
 			}
 
-			files := executer.transaction.request.MultipartForm.File
+			files := executer.transaction.Request.MultipartForm.File
 			totalSize := int64(0)
 			for _, headers := range files {
 				for _, head := range headers {

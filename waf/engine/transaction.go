@@ -16,8 +16,9 @@ type TransactionMap struct {
 }
 
 type Transaction struct {
-	request *http.Request
-	tx      map[string]interface{}
+	Request  *http.Request
+	Response *http.Response
+	tx       map[string]interface{}
 }
 
 type TransactionData struct {
@@ -70,7 +71,7 @@ func InitTransactionMap() {
 
 // NewTransaction Initiates a new request variable object
 func NewTransaction(request *http.Request) *Transaction {
-	return &Transaction{request, make(map[string]interface{})}
+	return &Transaction{request, nil, make(map[string]interface{})}
 }
 
 //Get the data in transaction data

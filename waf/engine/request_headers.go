@@ -12,7 +12,7 @@ func (t *TransactionMap) loadRequestHeaders() *TransactionMap {
 	t.variableMap[REQUEST_HEADERS] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
-			httpData := executer.transaction.request.Header
+			httpData := executer.transaction.Request.Header
 
 			if executer.variable.LengthCheckForCollection {
 				lenOfHeaders := 0

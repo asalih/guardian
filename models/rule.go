@@ -11,7 +11,7 @@ import (
 //SecRule VARIABLES OPERATOR [ACTIONS]
 
 //RulesCollection Rules collection
-var RulesCollection []*Rule
+var RulesCollection map[int][]*Rule
 
 //Rule the rule model
 type Rule struct {

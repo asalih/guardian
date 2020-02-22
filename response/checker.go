@@ -3,8 +3,11 @@ package response
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
+
+	"github.com/asalih/guardian/waf/engine"
 
 	"github.com/asalih/guardian/matches"
 
@@ -18,23 +21,18 @@ import (
 //Checker Response checker
 type Checker struct {
 	ResponseWriter http.ResponseWriter
-	Request        *http.Request
-	Response       *http.Response
+	Transaction    *engine.Transaction
 	Target         *models.Target
 
-	requestTransfer *responseTransfer
-	result          []*matches.MatchResult
-	firewallResult  chan *matches.FirewallMatchResult
-}
-
-type responseTransfer struct {
-	BodyBuffer  []byte
-	ContentType string
+	result         *models.RuleExecutionResult
+	firewallResult chan *matches.FirewallMatchResult
+	startTime      time.Time
 }
 
 /*NewResponseChecker Request checker initializer*/
-func NewResponseChecker(w http.ResponseWriter, r *http.Request, resp *http.Response, target *models.Target) *Checker {
-	return &Checker{w, r, resp, target, nil, nil, nil}
+func NewResponseChecker(w http.ResponseWriter, t *engine.Transaction, resp *http.Response, target *models.Target) *Checker {
+	t.Response = resp
+	return &Checker{w, t, target, nil, nil, time.Now()}
 }
 
 /*Handle Request checker handler func*/
@@ -44,12 +42,13 @@ func (r *Checker) Handle() bool {
 		return false
 	}
 
-	//TODO: Open it when checking response body
-	//bodyBuffer, _ := ioutil.ReadAll(r.Response.Body)
-	//r.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBuffer))
-	//r.requestTransfer = &requestTransfer{bodyBuffer, r.Request.Header.Get("Content-Type")}
+	result := r.handleWAFChecker(3)
 
-	result := r.handleWAFChecker()
+	if result {
+		return result
+	}
+
+	result = r.handleWAFChecker(4)
 
 	if result {
 		return result
@@ -74,23 +73,23 @@ func (r *Checker) handleFirewallRuleChecker() bool {
 
 		mapForFwRules := map[string]interface{}{
 			"ip": map[string]interface{}{
-				"src": r.Request.RemoteAddr,
+				"src": r.Transaction.Request.RemoteAddr,
 			},
 			"http": map[string]interface{}{
-				"query":    r.Request.URL.RawQuery,
-				"path":     r.Request.URL.Path,
-				"host":     r.Request.URL.Host,
-				"cookie":   helpers.CookiesToString(r.Request.Cookies()),
-				"header":   helpers.HeadersToString(r.Request.Header),
-				"method":   r.Request.Method,
-				"protocol": r.Request.Proto,
+				"query":    r.Transaction.Request.URL.RawQuery,
+				"path":     r.Transaction.Request.URL.Path,
+				"host":     r.Transaction.Request.URL.Host,
+				"cookie":   helpers.CookiesToString(r.Transaction.Request.Cookies()),
+				"header":   helpers.HeadersToString(r.Transaction.Request.Header),
+				"method":   r.Transaction.Request.Method,
+				"protocol": r.Transaction.Request.Proto,
 			},
 			"response": map[string]interface{}{
-				"status":        r.Response.Status,
-				"statusCode":    r.Response.StatusCode,
-				"cookie":        helpers.CookiesToString(r.Response.Cookies()),
-				"header":        helpers.HeadersToString(r.Response.Header),
-				"contentLength": r.Response.ContentLength,
+				"status":        r.Transaction.Response.Status,
+				"statusCode":    r.Transaction.Response.StatusCode,
+				"cookie":        helpers.CookiesToString(r.Transaction.Response.Cookies()),
+				"header":        helpers.HeadersToString(r.Transaction.Response.Header),
+				"contentLength": r.Transaction.Response.ContentLength,
 			},
 		}
 
@@ -117,9 +116,9 @@ func (r *Checker) handleFirewallRuleChecker() bool {
 		if i.IsMatched && i.FirewallRule.Action == 0 ||
 			!i.IsMatched && i.FirewallRule.Action == 1 {
 			r.ResponseWriter.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
+			fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Transaction.Request.URL.Path)
 
-			db.LogFirewallMatchResult(i, r.Target, r.Request.RequestURI, true)
+			db.LogFirewallMatchResult(i, r.Target, r.Transaction.Request.RequestURI, true)
 
 			return true
 		}
@@ -141,15 +140,36 @@ func (r *Checker) handleFirewallPayload(rule *models.FirewallRule, mapForFwRules
 	r.firewallResult <- matches.NewFirewallMatchResult(evalResult.(bool))
 }
 
-func (r *Checker) handleWAFChecker() bool {
+func (r *Checker) handleWAFChecker(phase int) bool {
 
 	done := make(chan bool, 1)
 
 	go func() {
 
-		/*for key, payload := range models.ResponseCheckPointPayloadData {
-			r.handlePayload(key, payload)
-		}*/
+		for _, rule := range models.RulesCollection[phase] {
+
+			//ruleStartTime := time.Now()
+			matchResult := r.Transaction.Execute(rule)
+
+			if matchResult == nil {
+				continue
+			}
+
+			if matchResult.IsMatched && rule.ShouldBlock() {
+				r.result = &models.RuleExecutionResult{matchResult, rule}
+				break
+			} else if !matchResult.IsMatched && !matchResult.DefaultState && !rule.ShouldBlock() {
+				matchResult.SetMatch(true)
+				r.result = &models.RuleExecutionResult{matchResult, rule}
+				break
+			}
+
+			//Line 127 and below commented lines are for calculating each rulr exec time
+			//passed := helpers.CalcTime(ruleStartTime, time.Now())
+			//if passed > 0 {
+			//	fmt.Println(rule.Action.ID + " took " + strconv.FormatInt(passed, 10) + " ms.")
+			//}
+		}
 
 		done <- true
 	}()
@@ -160,55 +180,17 @@ func (r *Checker) handleWAFChecker() bool {
 		panic("failed to execute rules.")
 	}
 
-	/*for _, i := range r.result {
-		for _, m := range i.MatchedPayloads {
-			if i.IsMatched {
-				db := &data.DBHelper{}
-				if m.Action == "block" {
-					r.ResponseWriter.WriteHeader(http.StatusBadRequest)
-					fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", r.Request.URL.Path)
+	if r.result != nil && r.result.MatchResult.IsMatched {
+		r.ResponseWriter.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", url.QueryEscape(r.Transaction.Request.URL.Path))
 
-					go db.LogMatchResult(i, m, r.Target, r.Request.RequestURI, true)
-
-					return true
-				} else if m.Action == "remove" {
-					//Probably action took previously. Just log it
-					go db.LogMatchResult(i, m, r.Target, r.Request.RequestURI, true)
-				}
-				//TODO: Handle new action types
-			}
+		if r.result.Rule.Action.LogAction == models.LogActionLog {
+			db := &data.DBHelper{}
+			go db.LogMatchResult(r.result, "TEMP", r.Target, r.Transaction.Request.RequestURI, false)
 		}
-	}*/
+
+		return true
+	}
 
 	return false
 }
-
-/*func (r *Checker) handlePayload(key string, payloads []models.PayloadData) {
-	switch key {
-	case "Header":
-		r.result = append(r.result, r.handleHeader(payloads))
-	}
-}*/
-
-/*func (r *Checker) handleHeader(payloads []models.PayloadData) *models.MatchResult {
-	matchResult := models.NewMatchResult(false)
-
-	for _, p := range payloads {
-		for hk, hv := range r.Response.Header {
-			isMatch, _ := models.IsMatch(p.Payload, hk+": "+hv[0])
-
-			if isMatch {
-				if p.Action == "block" {
-					matchResult.Append(&p).SetMatch(true).Time(r.time)
-					return matchResult
-				} else if p.Action == "remove" {
-					r.Response.Header.Del(hk)
-					matchResult.Append(&p).SetMatch(true).Time(r.time)
-				}
-			}
-		}
-	}
-
-	return matchResult
-}
-*/
