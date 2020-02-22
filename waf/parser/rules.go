@@ -33,6 +33,8 @@ var xDirectives = []string{"SecAction", "SecArgumentSeparator", "SecAuditEngine"
 func InitRulesCollection() {
 	files, _ := ioutil.ReadDir(operators.RulesAndDatasPath)
 
+	models.RulesCollection = make(map[int][]*models.Rule)
+
 	for _, v := range files {
 		if v.IsDir() || !strings.HasSuffix(v.Name(), ".conf") {
 			continue
