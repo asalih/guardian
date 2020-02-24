@@ -1,7 +1,9 @@
 package engine
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/asalih/guardian/matches"
@@ -70,8 +72,8 @@ func InitTransactionMap() {
 }
 
 // NewTransaction Initiates a new request variable object
-func NewTransaction(request *http.Request) *Transaction {
-	return &Transaction{request, nil, make(map[string]interface{})}
+func NewTransaction(r *http.Request) *Transaction {
+	return &Transaction{r, nil, make(map[string]interface{})}
 }
 
 //Get the data in transaction data
@@ -118,4 +120,20 @@ func (t *Transaction) Execute(rule *models.Rule) *matches.MatchResult {
 
 	return matchResult
 
+}
+
+//SafeParseForm ReadAll functions clears the buffer while parsing the form body.
+//For preventing to loose body buffer we are caching it first.
+func (t *Transaction) SafeParseForm() error {
+	if t.Request.Form != nil && t.Request.PostForm != nil {
+		return nil
+	}
+
+	bodyBytes, _ := ioutil.ReadAll(t.Request.Body)
+	t.Request.Body.Close() //  must close
+	t.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+	err := t.Request.ParseForm()
+	t.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	return err
 }

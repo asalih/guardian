@@ -22,7 +22,7 @@ func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
 				sizeOfParams += len(queries[q])
 			}
 
-			err := executer.transaction.Request.ParseForm()
+			err := executer.transaction.SafeParseForm()
 
 			if err != nil {
 				matchResult.SetMatch(true)

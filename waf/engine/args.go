@@ -56,7 +56,7 @@ func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePos
 	}
 
 	if executePost {
-		err := executer.transaction.Request.ParseForm()
+		err := executer.transaction.SafeParseForm()
 
 		if err != nil {
 			matchResult.SetMatch(true)
@@ -96,7 +96,7 @@ func argsLengthHandler(executer *TransactionExecuterModel, executeGet bool, exec
 	}
 
 	if executePost {
-		err := executer.transaction.Request.ParseForm()
+		err := executer.transaction.SafeParseForm()
 
 		if err != nil {
 			matchResult.SetMatch(true)

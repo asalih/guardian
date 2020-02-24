@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+
+	"github.com/asalih/guardian/waf/engine"
+
 	"net"
 	"net/http"
+
 	"net/url"
 	"time"
 
@@ -36,7 +40,7 @@ func NewGuardianHandler(isHTTPPortListener bool, certManager *autocert.Manager, 
 	return &GuardianHandler{isHTTPPortListener, certManager, ipRateLimiter}
 }
 
-func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	DB := data.NewDBHelper()
 
 	ipAddress := h.getIPAddress(r)
@@ -103,7 +107,7 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		uriToReq += r.RequestURI
 	}
 
-	transportResponse := h.transportRequest(uriToReq, w, r, target)
+	transportResponse := h.transportRequest(uriToReq, w, requestChecker.Transaction, target)
 
 	if transportResponse == nil {
 		go h.logHTTPRequest(httpLog.Build(target, r, nil).NoResponse())
@@ -131,9 +135,9 @@ func (h GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 //TransportRequest Transports the incoming request
-func (h GuardianHandler) transportRequest(uriToReq string,
+func (h *GuardianHandler) transportRequest(uriToReq string,
 	incomingWriter http.ResponseWriter,
-	incomingRequest *http.Request,
+	transaction *engine.Transaction,
 	target *models.Target) *http.Response {
 
 	var response *http.Response
@@ -158,8 +162,8 @@ func (h GuardianHandler) transportRequest(uriToReq string,
 		},
 	}
 
-	req, err = http.NewRequest(incomingRequest.Method, uriToReq, incomingRequest.Body)
-	for name, value := range incomingRequest.Header {
+	req, err = http.NewRequest(transaction.Request.Method, uriToReq, transaction.Request.Body)
+	for name, value := range transaction.Request.Header {
 		//TODO: Do not pass the headers except whitelisted
 		if name == "X-Forwarded-For" {
 			continue
@@ -168,7 +172,7 @@ func (h GuardianHandler) transportRequest(uriToReq string,
 		req.Header.Set(name, value[0])
 	}
 
-	fwIP := h.getIPAddress(incomingRequest)
+	fwIP := h.getIPAddress(transaction.Request)
 	if fwIP != "" {
 		req.Header.Set("X-Forwarded-For", fwIP)
 	}
@@ -183,7 +187,7 @@ func (h GuardianHandler) transportRequest(uriToReq string,
 	return response
 }
 
-func (h GuardianHandler) transformResponse(incomingWriter http.ResponseWriter, incomingRequest *http.Request, response *http.Response) {
+func (h *GuardianHandler) transformResponse(incomingWriter http.ResponseWriter, incomingRequest *http.Request, response *http.Response) {
 	for k, v := range response.Header {
 		incomingWriter.Header().Set(k, v[0])
 	}
@@ -192,11 +196,11 @@ func (h GuardianHandler) transformResponse(incomingWriter http.ResponseWriter, i
 	defer incomingRequest.Body.Close()
 }
 
-func (h GuardianHandler) logHTTPRequest(log *models.HTTPLog) {
+func (h *GuardianHandler) logHTTPRequest(log *models.HTTPLog) {
 	data.NewDBHelper().LogHTTPRequest(log)
 }
 
-func (h GuardianHandler) getIPAddress(incomingRequest *http.Request) string {
+func (h *GuardianHandler) getIPAddress(incomingRequest *http.Request) string {
 
 	//TODO: IP forwarding must be enabled for the target
 	/*
