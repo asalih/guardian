@@ -4,7 +4,7 @@ import (
 	"net/url"
 )
 
-func (transform *TransformationMap) loadUrlDecodeUni() {
+func (transform *TransformationMap) loadURLDecodeUni() {
 	transform.funcMap["urlDecodeUni"] = func(variableData interface{}) interface{} {
 
 		//TODO: url decode uni has to be reviewed
