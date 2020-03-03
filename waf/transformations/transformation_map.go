@@ -18,8 +18,6 @@ func InitTransformationMap() {
 	TransformationMaps = &TransformationMap{make(map[string]func(interface{}) interface{})}
 
 	TransformationMaps.loadRemoveWhitespace()
-	TransformationMaps.loadURLDecode()
-	TransformationMaps.loadURLDecodeUni() //TODO Review it
 	TransformationMaps.loadBase64Decode()
 	TransformationMaps.loadSQLHexDecode()    // Not implemented
 	TransformationMaps.loadBase64DecodeExt() // Not implemented
@@ -40,4 +38,14 @@ func InitTransformationMap() {
 	TransformationMaps.loadParityOdd7bit()
 	TransformationMaps.loadParityZero7bit()
 	TransformationMaps.loadRemoveNulls()
+	TransformationMaps.loadReplaceComments()
+	TransformationMaps.loadRemoveCommentsChar()
+	TransformationMaps.loadReplaceNulls()
+	TransformationMaps.loadURLDecode()
+	TransformationMaps.loadURLDecodeUni() //TODO Review it
+	TransformationMaps.loadUppercase()
+	TransformationMaps.loadUtf8ToUnicode() // Not implemented
+	TransformationMaps.loadSHA1()
+	TransformationMaps.loadTrimLeft()
+	TransformationMaps.loadTrimRight()
 }
