@@ -57,12 +57,14 @@ func InitTransactionMap() {
 	TransactionMaps.loadMatchedVars()          //Not implemented
 	TransactionMaps.loadMultipartCrlfLfLines() //Not implemented
 	TransactionMaps.loadQueryString()
+	TransactionMaps.loadUniqueID() // Not implemented - might not needed.
 	TransactionMaps.loadRequestCookies()
 	TransactionMaps.loadRequestCookiesNames()
 	TransactionMaps.loadRequestFilename()
 	TransactionMaps.loadRequestHeaders()
 	TransactionMaps.loadRequestHeadersNames()
 	TransactionMaps.loadRequestBodyType()
+	TransactionMaps.loadRequestLine()
 	TransactionMaps.loadRequestUri()
 	TransactionMaps.loadRequestMethod()
 	TransactionMaps.loadRemoteAddr()
