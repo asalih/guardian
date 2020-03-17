@@ -4,10 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var ENV = "ENV"
-
 func (t *TransactionMap) loadEnv() *TransactionMap {
-	t.variableMap[ENV] =
+	t.variableMap["ENV"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
 			return matches.NewMatchResult().SetMatch(false)

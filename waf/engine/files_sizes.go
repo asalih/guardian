@@ -2,34 +2,32 @@ package engine
 
 import (
 	"github.com/asalih/guardian/matches"
+	"github.com/asalih/guardian/waf/bodyprocessor"
 )
 
-var FILES_SIZES = "FILES_SIZES"
-
 func (t *TransactionMap) loadFilesSizes() *TransactionMap {
-	t.variableMap[FILES_SIZES] =
+	t.variableMap["FILES_SIZES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
 
-			muliErr := executer.transaction.Request.ParseMultipartForm(1024 * 1024 * 4)
+			switch executer.transaction.BodyProcessor.(type) {
+			case *bodyprocessor.MultipartProcessor:
 
-			if muliErr != nil {
-				return matchResult.SetMatch(true)
-			}
+				files := executer.transaction.Request.MultipartForm.File
+				for _, headers := range files {
+					for _, head := range headers {
+						matchResult = executer.rule.ExecuteRule(head.Size)
 
-			files := executer.transaction.Request.MultipartForm.File
-			for _, headers := range files {
-				for _, head := range headers {
-					matchResult = executer.rule.ExecuteRule(head.Size)
-
-					if matchResult.IsMatched {
-						return matchResult.SetMatch(true)
+						if matchResult.IsMatched {
+							return matchResult.SetMatch(true)
+						}
 					}
 				}
+
+				return matchResult
 			}
 
-			return matchResult
-
+			return matchResult.SetMatch(false)
 		}}
 
 	return t

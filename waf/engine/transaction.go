@@ -1,32 +1,37 @@
 package engine
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/asalih/guardian/matches"
+	"github.com/asalih/guardian/waf/bodyprocessor"
 
 	"github.com/asalih/guardian/models"
 )
 
+//TransactionMaps global map variable object
 var TransactionMaps *TransactionMap
 
+//TransactionMap variable map model
 type TransactionMap struct {
 	variableMap map[string]*TransactionData
 }
 
+//Transaction Main model for request response examine
 type Transaction struct {
-	Request  *http.Request
-	Response *http.Response
-	tx       map[string]interface{}
+	Request       *http.Request
+	Response      *http.Response
+	BodyProcessor bodyprocessor.IBodyProcessor
+	tx            map[string]interface{}
 }
 
+//TransactionData Transaction model
 type TransactionData struct {
 	executer func(*TransactionExecuterModel) *matches.MatchResult
 }
 
+//TransactionExecuterModel Executer model
 type TransactionExecuterModel struct {
 	transaction *Transaction
 	rule        *models.Rule
@@ -65,7 +70,7 @@ func InitTransactionMap() {
 	TransactionMaps.loadRequestHeadersNames()
 	TransactionMaps.loadRequestBodyType()
 	TransactionMaps.loadRequestLine()
-	TransactionMaps.loadRequestUri()
+	TransactionMaps.loadRequestURI()
 	TransactionMaps.loadRequestMethod()
 	TransactionMaps.loadRemoteAddr()
 	TransactionMaps.loadTX()
@@ -75,7 +80,7 @@ func InitTransactionMap() {
 
 // NewTransaction Initiates a new request variable object
 func NewTransaction(r *http.Request) *Transaction {
-	return &Transaction{r, nil, make(map[string]interface{})}
+	return &Transaction{r, nil, bodyprocessor.NewBodyProcessor(r), make(map[string]interface{})}
 }
 
 //Get the data in transaction data
@@ -122,20 +127,4 @@ func (t *Transaction) Execute(rule *models.Rule) *matches.MatchResult {
 
 	return matchResult
 
-}
-
-//SafeParseForm ReadAll functions clears the buffer while parsing the form body.
-//For preventing to loose body buffer we are caching it first.
-func (t *Transaction) SafeParseForm() error {
-	if t.Request.Form != nil && t.Request.PostForm != nil {
-		return nil
-	}
-
-	bodyBytes, _ := ioutil.ReadAll(t.Request.Body)
-	t.Request.Body.Close() //  must close
-	t.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-	err := t.Request.ParseForm()
-	t.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-
-	return err
 }

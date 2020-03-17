@@ -31,7 +31,7 @@ func NewHTTPServer() *HTTPServer {
 			models.Configuration.RateLimitBurst)}
 }
 
-func (h HTTPServer) ServeHTTP() {
+func (h *HTTPServer) ServeHTTP() {
 	srv80 := &http.Server{
 		ReadHeaderTimeout: 20 * time.Second,
 		WriteTimeout:      2 * time.Minute,
@@ -74,7 +74,7 @@ func (h HTTPServer) ServeHTTP() {
 	srv.ListenAndServeTLS("", "")
 }
 
-func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+func (h *HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	var err error
 
 	return func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
@@ -116,6 +116,6 @@ func (h HTTPServer) certificateManager() func(clientHello *tls.ClientHelloInfo) 
 	}
 }
 
-func (h HTTPServer) loadCertificates(target *models.Target) (tls.Certificate, error) {
+func (h *HTTPServer) loadCertificates(target *models.Target) (tls.Certificate, error) {
 	return tls.X509KeyPair([]byte(target.CertCrt.String), []byte(target.CertKey.String))
 }

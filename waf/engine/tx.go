@@ -4,10 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var TX = "TX"
-
 func (t *TransactionMap) loadTX() *TransactionMap {
-	t.variableMap[TX] =
+	t.variableMap["TX"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			matchResult := matches.NewMatchResult()
@@ -15,7 +13,7 @@ func (t *TransactionMap) loadTX() *TransactionMap {
 
 			if executer.variable.LengthCheckForCollection {
 				lenOfHeaders := 0
-				for key, _ := range httpData {
+				for key := range httpData {
 					if executer.variable.ShouldPassCheck(key) {
 						continue
 					}

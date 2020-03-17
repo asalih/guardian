@@ -4,12 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var ARGS_NAMES = "ARGS_NAMES"
-var ARGS_GET_NAMES = "ARGS_GET_NAMES"
-var ARGS_POST_NAMES = "ARGS_POST_NAMES"
-
 func (t *TransactionMap) loadArgsNames() *TransactionMap {
-	t.variableMap[ARGS_NAMES] =
+	t.variableMap["ARGS_NAMES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, true, true)
@@ -17,7 +13,7 @@ func (t *TransactionMap) loadArgsNames() *TransactionMap {
 			return argsHandler(executer, true, true)
 		}}
 
-	t.variableMap[ARGS_GET_NAMES] =
+	t.variableMap["ARGS_GET_NAMES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, true, false)
@@ -25,7 +21,7 @@ func (t *TransactionMap) loadArgsNames() *TransactionMap {
 			return argsHandler(executer, true, false)
 		}}
 
-	t.variableMap[ARGS_POST_NAMES] =
+	t.variableMap["ARGS_POST_NAMES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, false, true)
@@ -53,12 +49,6 @@ func argsNameHandler(executer *TransactionExecuterModel, executeGet bool, execut
 	}
 
 	if executePost {
-		err := executer.transaction.SafeParseForm()
-
-		if err != nil {
-			matchResult.SetMatch(true)
-			return matchResult
-		}
 
 		form := executer.transaction.Request.Form
 
@@ -78,7 +68,7 @@ func argsNameHandler(executer *TransactionExecuterModel, executeGet bool, execut
 }
 
 func argsNameLengthHandler(executer *TransactionExecuterModel, executeGet bool, executePost bool) *matches.MatchResult {
-	matchResult := matches.NewMatchResult()
+
 	lengthOfParams := 0
 	if executeGet {
 		queries := executer.transaction.Request.URL.Query()
@@ -91,14 +81,8 @@ func argsNameLengthHandler(executer *TransactionExecuterModel, executeGet bool, 
 	}
 
 	if executePost {
-		err := executer.transaction.SafeParseForm()
 
-		if err != nil {
-			matchResult.SetMatch(true)
-			return matchResult
-		}
-
-		form := executer.transaction.Request.Form
+		form := executer.transaction.BodyProcessor.GetBody()
 
 		for f := range form {
 			if executer.variable.ShouldPassCheck(f) {

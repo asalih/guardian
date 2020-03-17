@@ -4,12 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var ARGS = "ARGS"
-var ARGS_GET = "ARGS_GET"
-var ARGS_POST = "ARGS_POST"
-
 func (t *TransactionMap) loadArgs() *TransactionMap {
-	t.variableMap[ARGS] =
+	t.variableMap["ARGS"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, true, true)
@@ -17,7 +13,7 @@ func (t *TransactionMap) loadArgs() *TransactionMap {
 			return argsHandler(executer, true, true)
 		}}
 
-	t.variableMap[ARGS_GET] =
+	t.variableMap["ARGS_GET"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, true, false)
@@ -25,7 +21,7 @@ func (t *TransactionMap) loadArgs() *TransactionMap {
 			return argsHandler(executer, true, false)
 		}}
 
-	t.variableMap[ARGS_POST] =
+	t.variableMap["ARGS_POST"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, false, true)
@@ -56,12 +52,6 @@ func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePos
 	}
 
 	if executePost {
-		err := executer.transaction.SafeParseForm()
-
-		if err != nil {
-			matchResult.SetMatch(true)
-			return matchResult
-		}
 
 		form := executer.transaction.Request.Form
 
@@ -83,7 +73,7 @@ func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePos
 }
 
 func argsLengthHandler(executer *TransactionExecuterModel, executeGet bool, executePost bool) *matches.MatchResult {
-	matchResult := matches.NewMatchResult()
+
 	lengthOfParams := 0
 	if executeGet {
 		queries := executer.transaction.Request.URL.Query()
@@ -96,12 +86,6 @@ func argsLengthHandler(executer *TransactionExecuterModel, executeGet bool, exec
 	}
 
 	if executePost {
-		err := executer.transaction.SafeParseForm()
-
-		if err != nil {
-			matchResult.SetMatch(true)
-			return matchResult
-		}
 
 		form := executer.transaction.Request.Form
 

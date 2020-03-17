@@ -2,26 +2,22 @@ package engine
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/asalih/guardian/matches"
 )
 
-var FULL_REQUEST = "FULL_REQUEST"
-var FULL_REQUEST_LENGTH = "FULL_REQUEST_LENGTH"
-
 func (t *TransactionMap) loadFullRequestAndLength() *TransactionMap {
-	t.variableMap[FULL_REQUEST] =
+	t.variableMap["FULL_REQUEST"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			httpData := formatRequest(executer.transaction.Request)
+			httpData := formatRequest(executer.transaction)
 
 			return executer.rule.ExecuteRule(httpData)
 		}}
 
-	t.variableMap[FULL_REQUEST_LENGTH] =
+	t.variableMap["FULL_REQUEST_LENGTH"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			httpData := len(formatRequest(executer.transaction.Request))
+			httpData := len(formatRequest(executer.transaction))
 
 			return executer.rule.ExecuteRule(httpData)
 		}}
@@ -30,16 +26,16 @@ func (t *TransactionMap) loadFullRequestAndLength() *TransactionMap {
 }
 
 // formatRequest generates ascii representation of a request
-func formatRequest(r *http.Request) string {
+func formatRequest(t *Transaction) string {
 	// Create return string
 	var request []string
 	// Add the request string
-	url := fmt.Sprintf("%v %v %v", r.Method, r.URL, r.Proto)
+	url := fmt.Sprintf("%v %v %v", t.Request.Method, t.Request.URL, t.Request.Proto)
 	request = append(request, url)
 	// Add the host
-	request = append(request, fmt.Sprintf("Host: %v", r.Host))
+	request = append(request, fmt.Sprintf("Host: %v", t.Request.Host))
 	// Loop through headers
-	for name, headers := range r.Header {
+	for name, headers := range t.Request.Header {
 		name = strings.ToLower(name)
 		for _, h := range headers {
 			request = append(request, fmt.Sprintf("%v: %v", name, h))
@@ -47,10 +43,10 @@ func formatRequest(r *http.Request) string {
 	}
 
 	// If this is a POST, add post data
-	if r.Method == "POST" || r.Method == "PUT" {
-		r.ParseForm()
+	if t.Request.Method == "POST" || t.Request.Method == "PUT" {
+		t.BodyProcessor.GetBody()
 		request = append(request, "\n")
-		request = append(request, r.Form.Encode())
+		request = append(request, t.Request.Form.Encode())
 	}
 	// Return the request as a string
 	return strings.Join(request, "\n")

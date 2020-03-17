@@ -4,12 +4,10 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var UNIQUE_ID = "UNIQUE_ID"
-
 func (t *TransactionMap) loadUniqueID() *TransactionMap {
-	t.variableMap[UNIQUE_ID] =
+	t.variableMap["UNIQUE_ID"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-
+			//Not implemented yet - might not needed.
 			return matches.NewMatchResult().SetMatch(true)
 		}}
 

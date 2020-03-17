@@ -4,19 +4,14 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var REQUEST_URI = "REQUEST_URI"
-var REQUEST_PROTOCOL = "REQUEST_PROTOCOL"
-var REQUEST_URI_RAW = "REQUEST_URI_RAW"
-var REQUEST_BASENAME = "REQUEST_BASENAME"
+func (t *TransactionMap) loadRequestURI() *TransactionMap {
 
-func (t *TransactionMap) loadRequestUri() *TransactionMap {
-
-	t.variableMap[REQUEST_URI] =
+	t.variableMap["REQUEST_URI"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			return executer.rule.ExecuteRule(executer.transaction.Request.RequestURI)
 		}}
 
-	t.variableMap[REQUEST_PROTOCOL] =
+	t.variableMap["REQUEST_PROTOCOL"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			proto := "http"
@@ -27,7 +22,7 @@ func (t *TransactionMap) loadRequestUri() *TransactionMap {
 			return executer.rule.ExecuteRule(proto)
 		}}
 
-	t.variableMap[REQUEST_URI_RAW] =
+	t.variableMap["REQUEST_URI_RAW"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			uriRaw := ""
@@ -40,7 +35,7 @@ func (t *TransactionMap) loadRequestUri() *TransactionMap {
 			return executer.rule.ExecuteRule(uriRaw)
 		}}
 
-	t.variableMap[REQUEST_BASENAME] =
+	t.variableMap["REQUEST_BASENAME"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			return executer.rule.ExecuteRule(executer.transaction.Request.URL.Path)
 		}}

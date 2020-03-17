@@ -4,13 +4,9 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var ARGS_COMBINED_SIZE = "ARGS_COMBINED_SIZE"
-
 func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
-	t.variableMap[ARGS_COMBINED_SIZE] =
+	t.variableMap["ARGS_COMBINED_SIZE"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			matchResult := matches.NewMatchResult()
-
 			sizeOfParams := 0
 
 			queries := executer.transaction.Request.URL.Query()
@@ -22,14 +18,7 @@ func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
 				sizeOfParams += len(queries[q])
 			}
 
-			err := executer.transaction.SafeParseForm()
-
-			if err != nil {
-				matchResult.SetMatch(true)
-				return matchResult
-			}
-
-			form := executer.transaction.Request.Form
+			form := executer.transaction.BodyProcessor.GetBody()
 
 			for f := range form {
 				if executer.variable.ShouldPassCheck(f) {

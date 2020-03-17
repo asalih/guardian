@@ -5,10 +5,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var REQUEST_HEADERS_NAMES = "REQUEST_HEADERS_NAMES"
-
 func (t *TransactionMap) loadRequestHeadersNames() *TransactionMap {
-	t.variableMap[REQUEST_HEADERS_NAMES] =
+	t.variableMap["REQUEST_HEADERS_NAMES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			httpData := helpers.GetHeadersNames(executer.transaction.Request.Header)

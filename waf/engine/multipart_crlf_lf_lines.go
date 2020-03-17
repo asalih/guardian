@@ -4,10 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-var MULTIPART_CRLF_LF_LINES = "MULTIPART_CRLF_LF_LINES"
-
 func (t *TransactionMap) loadMultipartCrlfLfLines() *TransactionMap {
-	t.variableMap[MULTIPART_CRLF_LF_LINES] =
+	t.variableMap["MULTIPART_CRLF_LF_LINES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
 			return matches.NewMatchResult()
