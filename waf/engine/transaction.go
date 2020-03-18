@@ -69,6 +69,7 @@ func InitTransactionMap() {
 	TransactionMaps.loadRequestHeaders()
 	TransactionMaps.loadRequestHeadersNames()
 	TransactionMaps.loadRequestBodyType()
+	TransactionMaps.loadReqBodyProcessor()
 	TransactionMaps.loadRequestLine()
 	TransactionMaps.loadRequestURI()
 	TransactionMaps.loadRequestMethod()

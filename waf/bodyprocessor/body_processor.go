@@ -14,6 +14,8 @@ func NewBodyProcessor(r *http.Request) IBodyProcessor {
 		return &JSONBodyProcessor{r, nil, nil}
 	} else if r.Header.Get("Content-Type") == "multipart/form-data" {
 		return &MultipartProcessor{r, nil}
+	} else if r.Header.Get("Content-Type") == "application/xml" {
+		return &XMLBodyProcessor{r, nil}
 	}
 
 	return &URLEncodedProcessor{r, nil}
