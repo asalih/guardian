@@ -1,6 +1,7 @@
 package bodyprocessor
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net/http"
 )
@@ -38,6 +39,7 @@ func (p *MultipartProcessor) GetBodyBuffer() []byte {
 	bodyBytes, _ := ioutil.ReadAll(p.request.Body)
 	p.request.Body.Close() //  must close
 	p.bodyBuffer = bodyBytes
+	p.request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	return p.bodyBuffer
 }

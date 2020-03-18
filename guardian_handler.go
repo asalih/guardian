@@ -85,6 +85,9 @@ func (h *GuardianHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	httpLog := models.NewHTTPLog()
 
+	//errp := r.ParseForm()
+	//fmt.Println(errp)
+
 	requestChecker := request.NewRequestChecker(w, r, target)
 	requestIsNotSafe := requestChecker.Handle()
 

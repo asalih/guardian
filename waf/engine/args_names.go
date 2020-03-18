@@ -50,7 +50,7 @@ func argsNameHandler(executer *TransactionExecuterModel, executeGet bool, execut
 
 	if executePost {
 
-		form := executer.transaction.Request.Form
+		form := executer.transaction.BodyProcessor.GetBody()
 
 		for f := range form {
 			if executer.variable.ShouldPassCheck(f) {

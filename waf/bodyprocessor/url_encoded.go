@@ -1,6 +1,7 @@
 package bodyprocessor
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net/http"
 )
@@ -15,7 +16,7 @@ type URLEncodedProcessor struct {
 func (p *URLEncodedProcessor) GetBody() map[string][]string {
 
 	if p.request.Form != nil && p.request.PostForm != nil {
-		return nil
+		return map[string][]string(p.request.Form)
 	}
 
 	p.GetBodyBuffer()
@@ -38,6 +39,7 @@ func (p *URLEncodedProcessor) GetBodyBuffer() []byte {
 	bodyBytes, _ := ioutil.ReadAll(p.request.Body)
 	p.request.Body.Close() //  must close
 	p.bodyBuffer = bodyBytes
+	p.request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	return p.bodyBuffer
 }
