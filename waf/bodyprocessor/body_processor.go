@@ -11,7 +11,7 @@ type IBodyProcessor interface {
 //NewBodyProcessor Initiates a body processor by content-type
 func NewBodyProcessor(r *http.Request) IBodyProcessor {
 	if r.Header.Get("Content-Type") == "application/json" {
-		return &JSONBodyProcessor{r, nil, nil}
+		return &JSONBodyProcessor{r, nil, make(map[string][]string)}
 	} else if r.Header.Get("Content-Type") == "multipart/form-data" {
 		return &MultipartProcessor{r, nil}
 	} else if r.Header.Get("Content-Type") == "application/xml" {
