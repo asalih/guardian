@@ -8,7 +8,7 @@ type IBodyProcessor interface {
 	GetBodyBuffer() []byte
 }
 
-//NewBodyProcessor ...
+//NewBodyProcessor Initiates a body processor by content-type
 func NewBodyProcessor(r *http.Request) IBodyProcessor {
 	if r.Header.Get("Content-Type") == "application/json" {
 		return &JSONBodyProcessor{r, nil, nil}
@@ -19,4 +19,9 @@ func NewBodyProcessor(r *http.Request) IBodyProcessor {
 	}
 
 	return &URLEncodedProcessor{r, nil}
+}
+
+//NewResponseBodyProcessor inits response body processor
+func NewResponseBodyProcessor(r *http.Response) IBodyProcessor {
+	return &ResponseBodyProcessor{r, nil}
 }

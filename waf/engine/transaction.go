@@ -20,10 +20,11 @@ type TransactionMap struct {
 
 //Transaction Main model for request response examine
 type Transaction struct {
-	Request       *http.Request
-	Response      *http.Response
-	BodyProcessor bodyprocessor.IBodyProcessor
-	tx            map[string]interface{}
+	Request               *http.Request
+	Response              *http.Response
+	RequestBodyProcessor  bodyprocessor.IBodyProcessor
+	ResponseBodyProcessor bodyprocessor.IBodyProcessor
+	tx                    map[string]interface{}
 }
 
 //TransactionData Transaction model
@@ -80,11 +81,13 @@ func InitTransactionMap() {
 	TransactionMaps.loadIP()  //Not implemented
 	TransactionMaps.loadXML() //Not implemented
 	TransactionMaps.loadResponseStatus()
+	TransactionMaps.loadResponseBody()
+	TransactionMaps.loadResponseBodyLength()
 }
 
 // NewTransaction Initiates a new request variable object
 func NewTransaction(r *http.Request) *Transaction {
-	return &Transaction{r, nil, bodyprocessor.NewBodyProcessor(r), make(map[string]interface{})}
+	return &Transaction{r, nil, bodyprocessor.NewBodyProcessor(r), nil, make(map[string]interface{})}
 }
 
 //Get the data in transaction data

@@ -4,10 +4,10 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadRequestBody() *TransactionMap {
-	t.variableMap["REQUEST_BODY"] =
+func (t *TransactionMap) loadResponseBody() *TransactionMap {
+	t.variableMap["RESPONSE_BODY"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
-			bodyBuffer := executer.transaction.RequestBodyProcessor.GetBodyBuffer()
+			bodyBuffer := executer.transaction.ResponseBodyProcessor.GetBodyBuffer()
 
 			if bodyBuffer == nil {
 				return matches.NewMatchResult()

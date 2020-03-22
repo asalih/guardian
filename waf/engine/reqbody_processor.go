@@ -10,7 +10,7 @@ func (t *TransactionMap) loadReqBodyProcessor() *TransactionMap {
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			var body string
 
-			switch executer.transaction.BodyProcessor.(type) {
+			switch executer.transaction.RequestBodyProcessor.(type) {
 			case *bodyprocessor.JSONBodyProcessor:
 				body = "JSON"
 				break

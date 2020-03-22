@@ -9,7 +9,7 @@ func (t *TransactionMap) loadFilesNames() *TransactionMap {
 	transData := &TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 		matchResult := matches.NewMatchResult()
 
-		switch executer.transaction.BodyProcessor.(type) {
+		switch executer.transaction.RequestBodyProcessor.(type) {
 		case *bodyprocessor.MultipartProcessor:
 
 			files := executer.transaction.Request.MultipartForm.File

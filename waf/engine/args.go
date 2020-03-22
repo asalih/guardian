@@ -53,7 +53,7 @@ func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePos
 
 	if executePost {
 
-		form := executer.transaction.BodyProcessor.GetBody()
+		form := executer.transaction.RequestBodyProcessor.GetBody()
 
 		for f := range form {
 			if executer.variable.ShouldPassCheck(f) {
@@ -87,7 +87,7 @@ func argsLengthHandler(executer *TransactionExecuterModel, executeGet bool, exec
 
 	if executePost {
 
-		form := executer.transaction.BodyProcessor.GetBody()
+		form := executer.transaction.RequestBodyProcessor.GetBody()
 
 		for f := range form {
 			if executer.variable.ShouldPassCheck(f) {

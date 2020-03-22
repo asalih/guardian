@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/asalih/guardian/waf/bodyprocessor"
 	"github.com/asalih/guardian/waf/engine"
 
 	"github.com/asalih/guardian/matches"
@@ -32,6 +33,7 @@ type Checker struct {
 /*NewResponseChecker Request checker initializer*/
 func NewResponseChecker(w http.ResponseWriter, t *engine.Transaction, resp *http.Response, target *models.Target) *Checker {
 	t.Response = resp
+	t.ResponseBodyProcessor = bodyprocessor.NewResponseBodyProcessor(resp)
 	return &Checker{w, t, target, nil, nil, time.Now()}
 }
 

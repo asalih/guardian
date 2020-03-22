@@ -163,7 +163,7 @@ func (h *GuardianHandler) transportRequest(uriToReq string,
 		},
 	}
 
-	req, err = http.NewRequest(transaction.Request.Method, uriToReq, bytes.NewBuffer(transaction.BodyProcessor.GetBodyBuffer()))
+	req, err = http.NewRequest(transaction.Request.Method, uriToReq, bytes.NewBuffer(transaction.RequestBodyProcessor.GetBodyBuffer()))
 	for name, value := range transaction.Request.Header {
 		//TODO: Do not pass the headers except whitelisted
 		if name == "X-Forwarded-For" {

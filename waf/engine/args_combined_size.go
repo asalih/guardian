@@ -18,7 +18,7 @@ func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
 				sizeOfParams += len(queries[q])
 			}
 
-			form := executer.transaction.BodyProcessor.GetBody()
+			form := executer.transaction.RequestBodyProcessor.GetBody()
 
 			for f := range form {
 				if executer.variable.ShouldPassCheck(f) {

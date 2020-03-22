@@ -44,7 +44,7 @@ func formatRequest(t *Transaction) string {
 
 	// If this is a POST, add post data
 	if t.Request.Method == "POST" || t.Request.Method == "PUT" {
-		t.BodyProcessor.GetBody()
+		t.RequestBodyProcessor.GetBody()
 		request = append(request, "\n")
 		request = append(request, t.Request.Form.Encode())
 	}
