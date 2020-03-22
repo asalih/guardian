@@ -63,6 +63,8 @@ func InitTransactionMap() {
 	TransactionMaps.loadMultipartCrlfLfLines() //Not implemented
 	TransactionMaps.loadQueryString()
 	TransactionMaps.loadUniqueID() // Not implemented - might not needed.
+	TransactionMaps.loadRequestBody()
+	TransactionMaps.loadRequestBodyLength()
 	TransactionMaps.loadRequestCookies()
 	TransactionMaps.loadRequestCookiesNames()
 	TransactionMaps.loadRequestFilename()
@@ -77,6 +79,7 @@ func InitTransactionMap() {
 	TransactionMaps.loadTX()
 	TransactionMaps.loadIP()  //Not implemented
 	TransactionMaps.loadXML() //Not implemented
+	TransactionMaps.loadResponseStatus()
 }
 
 // NewTransaction Initiates a new request variable object
