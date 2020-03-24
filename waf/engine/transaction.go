@@ -80,8 +80,8 @@ func InitTransactionMap() {
 	TransactionMaps.loadRequestMethod()
 	TransactionMaps.loadRemoteAddr()
 	TransactionMaps.loadTX()
-	TransactionMaps.loadIP()  //Not implemented
-	TransactionMaps.loadXML() //Not implemented
+	TransactionMaps.loadIP() //Not implemented
+	TransactionMaps.loadXML()
 	TransactionMaps.loadResponseStatus()
 	TransactionMaps.loadResponseBody()
 	TransactionMaps.loadResponseBodyLength()
