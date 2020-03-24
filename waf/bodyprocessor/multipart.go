@@ -2,14 +2,16 @@ package bodyprocessor
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
 
 //MultipartProcessor URL Encoded body parser
 type MultipartProcessor struct {
-	request    *http.Request
-	bodyBuffer []byte
+	request      *http.Request
+	bodyBuffer   []byte
+	hasBodyError bool
 }
 
 //GetBody ...
@@ -23,7 +25,9 @@ func (p *MultipartProcessor) GetBody() map[string][]string {
 	err := p.request.ParseMultipartForm(1024 * 1024 * 4)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+
+		p.hasBodyError = true
 	}
 
 	return map[string][]string(p.request.Form)
@@ -42,4 +46,9 @@ func (p *MultipartProcessor) GetBodyBuffer() []byte {
 	p.request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	return p.bodyBuffer
+}
+
+//HasBodyError ...
+func (p *MultipartProcessor) HasBodyError() bool {
+	return p.hasBodyError
 }

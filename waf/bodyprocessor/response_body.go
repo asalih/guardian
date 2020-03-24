@@ -8,8 +8,9 @@ import (
 
 //ResponseBodyProcessor Response body processor
 type ResponseBodyProcessor struct {
-	response   *http.Response
-	bodyBuffer []byte
+	response     *http.Response
+	bodyBuffer   []byte
+	hasBodyError bool
 }
 
 //GetBody ...
@@ -32,4 +33,9 @@ func (p *ResponseBodyProcessor) GetBodyBuffer() []byte {
 	p.response.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	return p.bodyBuffer
+}
+
+//HasBodyError ...
+func (p *ResponseBodyProcessor) HasBodyError() bool {
+	return p.hasBodyError
 }

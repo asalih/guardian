@@ -1,6 +1,7 @@
 package bodyprocessor
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -11,9 +12,10 @@ import (
 
 //JSONBodyProcessor JSON body parser
 type JSONBodyProcessor struct {
-	request    *http.Request
-	bodyBuffer []byte
-	cache      map[string][]string
+	request      *http.Request
+	bodyBuffer   []byte
+	cache        map[string][]string
+	hasBodyError bool
 }
 
 //GetBody ...
@@ -75,7 +77,9 @@ func (p *JSONBodyProcessor) GetBody() map[string][]string {
 	err := parser.Parse(p.GetBodyBuffer(), gFunc)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+
+		p.hasBodyError = true
 	}
 
 	return p.cache
@@ -93,4 +97,9 @@ func (p *JSONBodyProcessor) GetBodyBuffer() []byte {
 	p.bodyBuffer = bodyBytes
 
 	return p.bodyBuffer
+}
+
+//HasBodyError ...
+func (p *JSONBodyProcessor) HasBodyError() bool {
+	return p.hasBodyError
 }

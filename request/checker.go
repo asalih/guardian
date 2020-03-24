@@ -26,9 +26,9 @@ type Checker struct {
 	Target         *models.Target
 	Transaction    *engine.Transaction
 
-	result         *models.RuleExecutionResult
-	firewallResult chan *matches.FirewallMatchResult
-	startTime      time.Time
+	ruleExecutionResult *models.RuleExecutionResult
+	firewallResult      chan *matches.FirewallMatchResult
+	startTime           time.Time
 }
 
 /*NewRequestChecker Request checker initializer*/
@@ -136,11 +136,11 @@ func (r *Checker) handleWAFChecker(phase int) bool {
 			}
 
 			if matchResult.IsMatched && rule.ShouldBlock() {
-				r.result = &models.RuleExecutionResult{matchResult, rule}
+				r.ruleExecutionResult = &models.RuleExecutionResult{matchResult, rule}
 				break
 			} else if !matchResult.IsMatched && !matchResult.DefaultState && !rule.ShouldBlock() {
 				matchResult.SetMatch(true)
-				r.result = &models.RuleExecutionResult{matchResult, rule}
+				r.ruleExecutionResult = &models.RuleExecutionResult{matchResult, rule}
 				break
 			}
 
@@ -160,13 +160,13 @@ func (r *Checker) handleWAFChecker(phase int) bool {
 		panic("failed to execute rules.")
 	}
 
-	if r.result != nil && r.result.MatchResult.IsMatched {
+	if r.ruleExecutionResult != nil && r.ruleExecutionResult.MatchResult.IsMatched {
 		r.ResponseWriter.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(r.ResponseWriter, "Bad Request. %s", url.QueryEscape(r.Transaction.Request.URL.Path))
 
-		if r.result.Rule.Action.LogAction == models.LogActionLog {
+		if r.ruleExecutionResult.Rule.Action.LogAction == models.LogActionLog {
 			db := &data.DBHelper{}
-			go db.LogMatchResult(r.result, "TEMP", r.Target, r.Transaction.Request.RequestURI, false)
+			go db.LogMatchResult(r.ruleExecutionResult, "TEMP", r.Target, r.Transaction.Request.RequestURI, false)
 		}
 
 		return true

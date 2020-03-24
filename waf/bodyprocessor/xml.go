@@ -2,31 +2,39 @@ package bodyprocessor
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/antchfx/xmlquery"
 )
 
 //XMLBodyProcessor URL Encoded body parser
 type XMLBodyProcessor struct {
-	request    *http.Request
-	bodyBuffer []byte
+	request      *http.Request
+	bodyBuffer   []byte
+	hasBodyError bool
+	XMLDocument  *xmlquery.Node
 }
 
 //GetBody ...
 func (p *XMLBodyProcessor) GetBody() map[string][]string {
 
-	if p.request.Form != nil && p.request.PostForm != nil {
-		return map[string][]string(p.request.Form)
+	if p.XMLDocument != nil {
+		return nil
 	}
 
-	p.GetBodyBuffer()
-	err := p.request.ParseForm()
+	doc, err := xmlquery.Parse(bytes.NewBuffer(p.GetBodyBuffer()))
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+
+		p.hasBodyError = true
 	}
 
-	return map[string][]string(p.request.Form)
+	p.XMLDocument = doc
+
+	return nil
 }
 
 //GetBodyBuffer ...
@@ -42,4 +50,9 @@ func (p *XMLBodyProcessor) GetBodyBuffer() []byte {
 	p.request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	return p.bodyBuffer
+}
+
+//HasBodyError ...
+func (p *XMLBodyProcessor) HasBodyError() bool {
+	return p.hasBodyError
 }

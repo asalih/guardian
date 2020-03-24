@@ -2,14 +2,16 @@ package bodyprocessor
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
 
 //URLEncodedProcessor URL Encoded body parser
 type URLEncodedProcessor struct {
-	request    *http.Request
-	bodyBuffer []byte
+	request      *http.Request
+	bodyBuffer   []byte
+	hasBodyError bool
 }
 
 //GetBody ...
@@ -23,7 +25,9 @@ func (p *URLEncodedProcessor) GetBody() map[string][]string {
 	err := p.request.ParseForm()
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+
+		p.hasBodyError = true
 	}
 
 	return map[string][]string(p.request.Form)
@@ -42,4 +46,9 @@ func (p *URLEncodedProcessor) GetBodyBuffer() []byte {
 	p.request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	return p.bodyBuffer
+}
+
+//HasBodyError ...
+func (p *URLEncodedProcessor) HasBodyError() bool {
+	return p.hasBodyError
 }

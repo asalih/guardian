@@ -24,7 +24,8 @@ type Transaction struct {
 	Response              *http.Response
 	RequestBodyProcessor  bodyprocessor.IBodyProcessor
 	ResponseBodyProcessor bodyprocessor.IBodyProcessor
-	tx                    map[string]interface{}
+
+	tx map[string]interface{}
 }
 
 //TransactionData Transaction model
@@ -65,6 +66,7 @@ func InitTransactionMap() {
 	TransactionMaps.loadQueryString()
 	TransactionMaps.loadUniqueID() // Not implemented - might not needed.
 	TransactionMaps.loadRequestBody()
+	TransactionMaps.loadReqBodyError()
 	TransactionMaps.loadRequestBodyLength()
 	TransactionMaps.loadRequestCookies()
 	TransactionMaps.loadRequestCookiesNames()
