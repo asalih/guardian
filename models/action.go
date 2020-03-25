@@ -9,7 +9,7 @@ import (
 //Action definition for Rules
 type Action struct {
 	ID               string
-	Phase            int
+	Phase            Phase
 	Transformations  []string
 	DisruptiveAction DisruptiveAction
 	LogAction        LogAction

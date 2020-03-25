@@ -77,7 +77,7 @@ func InitRulesCollectionFile(path string) {
 		if strings.HasPrefix(row, "SecRule") {
 			var rule *models.Rule
 			rule, i = walk(plainTextRules, i, plainTextRulesLen)
-			models.RulesCollection[rule.Action.Phase] = append(models.RulesCollection[rule.Action.Phase], rule)
+			models.RulesCollection[int(rule.Action.Phase)] = append(models.RulesCollection[int(rule.Action.Phase)], rule)
 		}
 	}
 }
@@ -265,5 +265,5 @@ func parseAction(action string) *models.Action {
 		transforms = append(transforms, transformMatch[1])
 	}
 
-	return &models.Action{idRegIdentified, phaseRegIdentified, transforms, disrupAct, models.LogActionLog}
+	return &models.Action{idRegIdentified, models.Phase(phaseRegIdentified - 1), transforms, disrupAct, models.LogActionLog}
 }

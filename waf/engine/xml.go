@@ -15,6 +15,10 @@ func (t *TransactionMap) loadXML() *TransactionMap {
 				executer.transaction.RequestBodyProcessor.GetBody()
 				bodyProcessor := executer.transaction.RequestBodyProcessor.(*bodyprocessor.XMLBodyProcessor)
 
+				if bodyProcessor.HasBodyError() {
+					return matches.NewMatchResult()
+				}
+
 				var nodes []*xmlquery.Node
 				if len(executer.variable.Filter) > 0 {
 					nodes = xmlquery.Find(bodyProcessor.XMLDocument, executer.variable.Filter[0])

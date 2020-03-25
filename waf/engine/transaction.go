@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/asalih/guardian/matches"
 	"github.com/asalih/guardian/waf/bodyprocessor"
@@ -25,7 +26,8 @@ type Transaction struct {
 	RequestBodyProcessor  bodyprocessor.IBodyProcessor
 	ResponseBodyProcessor bodyprocessor.IBodyProcessor
 
-	tx map[string]interface{}
+	duration time.Time
+	tx       map[string]interface{}
 }
 
 //TransactionData Transaction model
@@ -48,8 +50,8 @@ func InitTransactionMap() {
 	TransactionMaps.loadArgsNames()
 	TransactionMaps.loadArgsCombinedSize()
 	TransactionMaps.loadAuthType()
-	TransactionMaps.loadDuration() //Not implemented
-	TransactionMaps.loadEnv()      //Not implemented
+	TransactionMaps.loadDuration()
+	TransactionMaps.loadEnv() //Not implemented
 	TransactionMaps.loadFiles()
 	TransactionMaps.loadFilesCombinedSize() //TODO might add mime type
 	TransactionMaps.loadFilesNames()
@@ -89,7 +91,7 @@ func InitTransactionMap() {
 
 // NewTransaction Initiates a new request variable object
 func NewTransaction(r *http.Request) *Transaction {
-	return &Transaction{r, nil, bodyprocessor.NewBodyProcessor(r), nil, make(map[string]interface{})}
+	return &Transaction{r, nil, bodyprocessor.NewBodyProcessor(r), nil, time.Now(), make(map[string]interface{})}
 }
 
 //Get the data in transaction data
