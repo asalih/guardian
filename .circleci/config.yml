@@ -37,6 +37,9 @@ jobs:
             name: Put connection str
             command: sed -i 's/PASSWORD/$connectionStringPwd/g' /go/src/github.com/asalih/guardian/appsettings.live.json
       - run:
+            name: Put connection str ip
+            command: sed -i 's/dbip/$dbip/g' /go/src/github.com/asalih/guardian/appsettings.live.json
+      - run:
             name: Echo cstr
             command: echo $connectionStringPwd
       - run:
