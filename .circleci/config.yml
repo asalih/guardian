@@ -38,7 +38,7 @@ jobs:
           command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/*.json root@165.22.16.87://applications/guardian/
       - run:
             name: Put connection str
-            command: sed -i 's/********/${connectionStringPwd}/g' appsettings.live.json
+            command: sed -i 's/PASSWORD/${connectionStringPwd}/g' appsettings.live.json
       - run:
           name: Copy crs files
           command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/crs/*.conf root@165.22.16.87://applications/guardian/crs/
