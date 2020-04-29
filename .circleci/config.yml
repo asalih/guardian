@@ -34,15 +34,6 @@ jobs:
           name: Deploy
           command: scp -o StrictHostKeyChecking=no -r workdir/* root@165.22.16.87://applications/guardian/
       - run:
-            name: Put connection str
-            command: sed -i 's/PASSWORD/$connectionStringPwd/g' /go/src/github.com/asalih/guardian/appsettings.live.json
-      - run:
-            name: Put connection str ip
-            command: sed -i 's/dbip/$dbip/g' /go/src/github.com/asalih/guardian/appsettings.live.json
-      - run:
-            name: Echo cstrdddd
-            command: echo 's/PASSWORD/$connectionStringPwd/g'
-      - run:
           name: Copy json files
           command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/*.json root@165.22.16.87://applications/guardian/
       - run:
