@@ -66,11 +66,11 @@ func (r *Checker) handleWAFChecker(phase models.Phase) bool {
 			}
 
 			if matchResult.IsMatched && rule.ShouldBlock() {
-				r.result = &models.RuleExecutionResult{matchResult, rule}
+				r.result = &models.RuleExecutionResult{MatchResult: matchResult, Rule: rule}
 				break
 			} else if !matchResult.IsMatched && !matchResult.DefaultState && !rule.ShouldBlock() {
 				matchResult.SetMatch(true)
-				r.result = &models.RuleExecutionResult{matchResult, rule}
+				r.result = &models.RuleExecutionResult{MatchResult: matchResult, Rule: rule}
 				break
 			}
 
