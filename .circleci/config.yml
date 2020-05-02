@@ -43,5 +43,8 @@ jobs:
           name: Copy crs-data files
           command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/crs/*.data root@165.22.16.87://applications/guardian/crs/
       - run:
+          name: Deploy Cleanup
+          command: ssh root@165.22.16.87 /applications/guardian_deploy_cleanup.sh
+      - run:
           name: Service Start
           command: ssh -o "StrictHostKeyChecking no" root@165.22.16.87 systemctl start guardian.service
