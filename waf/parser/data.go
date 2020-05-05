@@ -11,6 +11,7 @@ import (
 	"github.com/asalih/guardian/waf/operators"
 )
 
+//InitDataFiles Data files initor
 func InitDataFiles() {
 	operators.DataFileCaches = make(map[string]*operators.DataFileCache)
 
@@ -32,7 +33,7 @@ func initDataFile(name string) {
 		panic(err)
 	}
 
-	fileCache := &operators.DataFileCache{name, nil, nil}
+	fileCache := &operators.DataFileCache{FileName: name}
 	scanner := bufio.NewScanner(dataFile)
 
 	for scanner.Scan() {

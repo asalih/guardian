@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bufio"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -175,7 +176,7 @@ func parseVariables(variable string) []*models.Variable {
 				varName = varName[1:]
 			}
 
-			v = &models.Variable{varName, strings.Split(strings.Trim(varsAndFilter[1], " "), ","), isNotType, isLengthCheck}
+			v = &models.Variable{Name: varName, Filter: strings.Split(strings.Trim(varsAndFilter[1], " "), ","), FilterIsNotType: isNotType, LengthCheckForCollection: isLengthCheck}
 		} else {
 			varName := strings.Trim(varsAndFilter[0], " ")
 
@@ -183,7 +184,7 @@ func parseVariables(variable string) []*models.Variable {
 				varName = varName[1:]
 			}
 
-			v = &models.Variable{varName, nil, false, isLengthCheck}
+			v = &models.Variable{Name: varName, LengthCheckForCollection: isLengthCheck}
 		}
 
 		dataVariable = append(dataVariable, v)
@@ -224,7 +225,7 @@ func parseOperators(operator string) *models.Operator {
 		parsedExpression = strings.TrimLeft(parsedExpression, "@! ")
 	}
 
-	return &models.Operator{parsedOperator, parsedExpression, isNotOperator}
+	return &models.Operator{Func: parsedOperator, Expression: parsedExpression, OperatorIsNotType: isNotOperator}
 }
 
 func parseAction(action string) *models.Action {
@@ -258,12 +259,21 @@ func parseAction(action string) *models.Action {
 		disrupAct = models.DisruptiveActionProxy
 	}
 
-	transformMatch := transformReg.FindStringSubmatch(action)
+	transformMatch := transformReg.FindAllStringSubmatch(action, -1)
 	var transforms []string
 
-	if len(transformMatch) > 1 {
-		transforms = append(transforms, transformMatch[1])
+	if len(transformMatch) > 0 {
+		for _, j := range transformMatch {
+			if len(j) > 1 {
+				transforms = append(transforms, j[1])
+			}
+		}
+
 	}
 
-	return &models.Action{idRegIdentified, models.Phase(phaseRegIdentified - 1), transforms, disrupAct, models.LogActionLog}
+	if phaseRegIdentified == 5 {
+		fmt.Println(idRegIdentified)
+	}
+
+	return &models.Action{ID: idRegIdentified, Phase: models.Phase(phaseRegIdentified - 1), Transformations: transforms, DisruptiveAction: disrupAct, LogAction: models.LogActionLog}
 }

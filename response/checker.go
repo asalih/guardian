@@ -56,7 +56,15 @@ func (r *Checker) handleWAFChecker(phase models.Phase) bool {
 
 	go func() {
 
-		for _, rule := range models.RulesCollection[int(phase)] {
+		rulesInPhase := models.RulesCollection[int(phase)]
+
+		if phase == models.Phase4 {
+			//Client rules will be executed in phase2
+			db := data.NewDBHelper()
+			rulesInPhase = append(rulesInPhase, db.GetRequestFirewallRules(r.Target.ID)...)
+		}
+
+		for _, rule := range rulesInPhase {
 
 			//ruleStartTime := time.Now()
 			matchResult := r.Transaction.Execute(rule)

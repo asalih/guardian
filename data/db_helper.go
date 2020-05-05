@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -67,7 +68,7 @@ func (h *DBHelper) getTarget(domain string) *models.Target {
 }
 
 //GetRequestFirewallRules Gets the firewall rule
-func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRule {
+func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.Rule {
 	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
@@ -75,30 +76,36 @@ func (h *DBHelper) GetRequestFirewallRules(targetID string) []*models.FirewallRu
 		panic(err)
 	}
 
-	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\", \"Action\" FROM public.\"FirewallRules\" where \"IsActive\"=true and \"RuleFor\"=0 and \"TargetId\"= $1", targetID)
+	rows, qerr := conn.Query("SELECT \"SerializedExpression\" FROM public.\"FirewallRules\" where \"IsActive\"=true and \"RuleFor\"=0 and \"TargetId\"= $1", targetID)
 
 	if qerr != nil {
 		panic(qerr)
 	}
 
-	result := make([]*models.FirewallRule, 0)
+	result := []*models.Rule{}
 
 	for rows.Next() {
-		var fwRule = &models.FirewallRule{}
-		ferr := rows.Scan(&fwRule.ID, &fwRule.Expression, &fwRule.Action)
+		var fwRule string
+		ferr := rows.Scan(&fwRule)
 
 		if ferr != nil {
 			panic(ferr)
 		}
 
-		result = append(result, fwRule)
+		var rules = []models.Rule{}
+		if err = json.Unmarshal([]byte(fwRule), &rules); err == nil {
+			for _, r := range rules {
+				result = append(result, &r)
+			}
+
+		}
 	}
 
 	return result
 }
 
 //GetResponseFirewallRules Gets the firewall rule
-func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallRule {
+func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.Rule {
 	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()
 
@@ -106,23 +113,29 @@ func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallR
 		panic(err)
 	}
 
-	rows, qerr := conn.Query("SELECT \"Id\", \"Expression\", \"Action\" FROM public.\"FirewallRules\" where \"IsActive\"=true and \"RuleFor\"=1 and \"TargetId\"= $1", targetID)
+	rows, qerr := conn.Query("SELECT \"SerializedExpression\" FROM public.\"FirewallRules\" where \"IsActive\"=true and \"RuleFor\"=1 and \"TargetId\"= $1", targetID)
 
 	if qerr != nil {
 		panic(qerr)
 	}
 
-	result := make([]*models.FirewallRule, 0)
+	result := []*models.Rule{}
 
 	for rows.Next() {
-		var fwRule = &models.FirewallRule{}
-		ferr := rows.Scan(&fwRule.ID, &fwRule.Expression)
+		var fwRule string
+		ferr := rows.Scan(&fwRule)
 
 		if ferr != nil {
 			panic(ferr)
 		}
 
-		result = append(result, fwRule)
+		var rules = []models.Rule{}
+		if err = json.Unmarshal([]byte(fwRule), &rules); err == nil {
+			for _, r := range rules {
+				result = append(result, &r)
+			}
+
+		}
 	}
 
 	return result
@@ -131,7 +144,7 @@ func (h *DBHelper) GetResponseFirewallRules(targetID string) []*models.FirewallR
 //LogMatchResult ...
 func (h *DBHelper) LogMatchResult(
 	ruleExecutionResult *models.RuleExecutionResult,
-	ruleId string,
+	ruleID string,
 	target *models.Target,
 	requestURI string,
 	forResponse bool) {
@@ -159,7 +172,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 		target.ID, true,
 		ruleExecutionResult.MatchResult.Elapsed,
 		0,
-		ruleId,
+		ruleID,
 		requestURI,
 		ruleFor,
 		0 /*wafAction*/)
@@ -169,41 +182,6 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 	}
 
 }
-
-//LogFirewallMatchResult ...
-/*func (h *DBHelper) LogFirewallMatchResult(matchResult *models.FirewallMatchResult, target *models.Target, requestURI string, forResponse bool) {
-	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
-	defer conn.Close()
-
-	if err != nil {
-		panic(err)
-	}
-
-	sqlStatement := `
-INSERT INTO "RuleLogs" ("Id", "CreatedAt", "TargetId", "IsHitted", "ExecutionMillisecond", "LogType", "FirewallRuleId", "RequestUri", "RuleFor", "WafAction")
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
-
-	ruleFor := 0
-	if forResponse {
-		ruleFor = 1
-	}
-
-	_, err = conn.Exec(sqlStatement,
-		uuid.New(),
-		time.Now(),
-		target.ID,
-		true,
-		matchResult.Elapsed,
-		models.LogTypeFirewall,
-		matchResult.FirewallRule.ID,
-		requestURI,
-		ruleFor,
-		matchResult.FirewallRule.Action)
-
-	if err != nil {
-		panic(err)
-	}
-}*/
 
 //LogHTTPRequest ...
 func (h *DBHelper) LogHTTPRequest(log *models.HTTPLog) {
@@ -235,7 +213,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 	}
 }
 
-//LogThrottle ...
+//LogThrottleRequest ...
 func (h *DBHelper) LogThrottleRequest(ipAddress string) {
 	conn, err := sql.Open("postgres", models.Configuration.ConnectionString)
 	defer conn.Close()

@@ -67,7 +67,15 @@ func (r *Checker) handleWAFChecker(phase models.Phase) bool {
 
 	go func() {
 
-		for _, rule := range models.RulesCollection[int(phase)] {
+		rulesInPhase := models.RulesCollection[int(phase)]
+
+		if phase == models.Phase2 {
+			//Client rules will be executed in phase2
+			db := data.NewDBHelper()
+			rulesInPhase = append(rulesInPhase, db.GetRequestFirewallRules(r.Target.ID)...)
+		}
+
+		for _, rule := range rulesInPhase {
 
 			//ruleStartTime := time.Now()
 			matchResult := r.Transaction.Execute(rule)
@@ -77,11 +85,11 @@ func (r *Checker) handleWAFChecker(phase models.Phase) bool {
 			}
 
 			if matchResult.IsMatched && rule.ShouldBlock() {
-				r.ruleExecutionResult = &models.RuleExecutionResult{matchResult, rule}
+				r.ruleExecutionResult = &models.RuleExecutionResult{MatchResult: matchResult, Rule: rule}
 				break
 			} else if !matchResult.IsMatched && !matchResult.DefaultState && !rule.ShouldBlock() {
 				matchResult.SetMatch(true)
-				r.ruleExecutionResult = &models.RuleExecutionResult{matchResult, rule}
+				r.ruleExecutionResult = &models.RuleExecutionResult{MatchResult: matchResult, Rule: rule}
 				break
 			}
 
