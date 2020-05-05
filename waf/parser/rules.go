@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bufio"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -269,10 +268,6 @@ func parseAction(action string) *models.Action {
 			}
 		}
 
-	}
-
-	if phaseRegIdentified == 5 {
-		fmt.Println(idRegIdentified)
 	}
 
 	return &models.Action{ID: idRegIdentified, Phase: models.Phase(phaseRegIdentified - 1), Transformations: transforms, DisruptiveAction: disrupAct, LogAction: models.LogActionLog}
