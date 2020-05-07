@@ -82,7 +82,7 @@ func (r *Checker) handleWAFChecker(phase models.Phase) bool {
 			//Line 127 and below commented lines are for calculating each rulr exec time
 			//passed := helpers.CalcTime(ruleStartTime, time.Now())
 			//if passed > 0 {
-			//	fmt.Println(rule.Action.ID + " took " + strconv.FormatInt(passed, 10) + " ms.")
+			//      fmt.Println(rule.Action.ID + " took " + strconv.FormatInt(passed, 10) + " ms.")
 			//}
 		}
 

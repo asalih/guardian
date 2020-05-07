@@ -101,7 +101,6 @@ func walk(plainTextRules []string, i int, plainTextRulesLen int) (*models.Rule, 
 
 		if strings.HasPrefix(lr, "SecRule") {
 			if chainWait {
-				chainWait = false
 				chainRule, i = walk(plainTextRules, li, plainTextRulesLen)
 			}
 			break
