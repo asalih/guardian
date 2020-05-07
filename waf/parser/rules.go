@@ -85,7 +85,7 @@ func InitRulesCollectionFile(path string) {
 func walk(plainTextRules []string, i int, plainTextRulesLen int) (*models.Rule, int) {
 	row := plainTextRules[i]
 	var chainRule *models.Rule
-	chainWait := false
+	var chainWait bool
 	for {
 		li := i + 1
 
@@ -194,7 +194,7 @@ func parseVariables(variable string) []*models.Variable {
 
 func parseOperators(operator string) *models.Operator {
 	isNotOperator := strings.HasPrefix(operator, `"!`)
-	isOperatorSpec := false
+	var isOperatorSpec bool
 
 	if isNotOperator {
 		isOperatorSpec = strings.HasPrefix(operator, `"!@`)
