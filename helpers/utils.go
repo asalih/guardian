@@ -47,9 +47,9 @@ func HeadersToString(header http.Header) (res string) {
 	return
 }
 
-//Gets the header name
+//GetHeadersNames Gets the header name
 func GetHeadersNames(header http.Header) (res []string) {
-	for name, _ := range header {
+	for name := range header {
 		res = append(res, name)
 	}
 	return
@@ -76,10 +76,12 @@ func CalcTime(start time.Time, end time.Time) int64 {
 	return end.Sub(start).Nanoseconds() / int64(time.Millisecond)
 }
 
+//CalcTimeNow ...
 func CalcTimeNow(end time.Time) int64 {
 	return time.Since(end).Nanoseconds() / int64(time.Millisecond)
 }
 
+//StringContains searches given string in a string slice
 func StringContains(slice []string, item string) bool {
 	set := make(map[string]struct{}, len(slice))
 	for _, s := range slice {

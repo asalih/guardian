@@ -75,7 +75,7 @@ func (m *Matcher) findBlice(b []byte) *node {
 // getFreeNode: gets a free node structure from the Matcher's trie
 // pool and updates the extent to point to the next free node.
 func (m *Matcher) getFreeNode() *node {
-	m.extent += 1
+	m.extent++
 
 	if m.extent == 1 {
 		m.root = &m.trie[0]
@@ -217,7 +217,7 @@ func NewStringMatcher(dictionary []string) *Matcher {
 // Match searches in for blices and returns all the blices found as
 // indexes into the original dictionary
 func (m *Matcher) Match(in []byte) []int {
-	m.counter += 1
+	m.counter++
 	var hits []int
 
 	n := m.root

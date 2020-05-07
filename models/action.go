@@ -15,6 +15,7 @@ type Action struct {
 	LogAction        LogAction
 }
 
+//ExecuteTransformation transformation function executer
 func (a *Action) ExecuteTransformation(variableData interface{}) interface{} {
 	if len(a.Transformations) == 0 {
 		return variableData

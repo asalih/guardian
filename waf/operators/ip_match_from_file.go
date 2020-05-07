@@ -9,10 +9,10 @@ import (
 func (opMap *OperatorMap) loadIPMatchFromFile() {
 	fn := func(expression interface{}, variableData interface{}) bool {
 
-		remoteAddressIp := net.ParseIP(variableData.(string))
+		remoteAddressIP := net.ParseIP(variableData.(string))
 		fileCache := DataFileCaches[expression.(string)]
 
-		if remoteAddressIp == nil || fileCache == nil {
+		if remoteAddressIP == nil || fileCache == nil {
 			return false
 		}
 
@@ -28,11 +28,11 @@ func (opMap *OperatorMap) loadIPMatchFromFile() {
 					continue
 				}
 
-				if subnet.Contains(remoteAddressIp) {
+				if subnet.Contains(remoteAddressIP) {
 					return true
 				}
 			} else {
-				if net.ParseIP(ip).Equal(remoteAddressIp) {
+				if net.ParseIP(ip).Equal(remoteAddressIP) {
 					return true
 				}
 			}

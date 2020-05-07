@@ -9,9 +9,9 @@ func (opMap *OperatorMap) loadIPMatch() {
 	opMap.funcMap["ipMatch"] = func(expression interface{}, variableData interface{}) bool {
 
 		ipAddresses := strings.Split(expression.(string), ",")
-		remoteAddressIp := net.ParseIP(variableData.(string))
+		remoteAddressIP := net.ParseIP(variableData.(string))
 
-		if remoteAddressIp == nil {
+		if remoteAddressIP == nil {
 			return false
 		}
 
@@ -30,11 +30,11 @@ func (opMap *OperatorMap) loadIPMatch() {
 					continue
 				}
 
-				if subnet.Contains(remoteAddressIp) {
+				if subnet.Contains(remoteAddressIP) {
 					return true
 				}
 			} else {
-				if net.ParseIP(ip).Equal(remoteAddressIp) {
+				if net.ParseIP(ip).Equal(remoteAddressIP) {
 					return true
 				}
 			}

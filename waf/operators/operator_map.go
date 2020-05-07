@@ -1,17 +1,22 @@
 package operators
 
+//RulesAndDatasPath static rules path
 var RulesAndDatasPath string = "./crs/"
 
+//OperatorMaps Global OperatorFuncs
 var OperatorMaps *OperatorMap
 
+//OperatorMap Map fn handler struct
 type OperatorMap struct {
 	funcMap map[string]func(expression interface{}, variableData interface{}) bool
 }
 
+//Get returns the operator fn with given key
 func (ops *OperatorMap) Get(key string) func(interface{}, interface{}) bool {
 	return ops.funcMap[key]
 }
 
+//InitOperatorMap operator initator
 func InitOperatorMap() {
 	OperatorMaps = &OperatorMap{make(map[string]func(interface{}, interface{}) bool)}
 
@@ -19,7 +24,7 @@ func InitOperatorMap() {
 	OperatorMaps.loadContains()
 	OperatorMaps.loadContainsWord()
 	OperatorMaps.loadDetectSqli()
-	OperatorMaps.loadDetectXss()
+	OperatorMaps.loadDetectXSS()
 	OperatorMaps.loadEndsWith()
 	OperatorMaps.loadEq()
 	OperatorMaps.loadFuzzyHash() //Not implemented
@@ -44,7 +49,7 @@ func InitOperatorMap() {
 	OperatorMaps.loadValidateDTD()    //Not implemented
 	OperatorMaps.loadValidateHash()   //Not implemented
 	OperatorMaps.loadValidateSchema() //Not implemented
-	OperatorMaps.loadUrlEncoding()
+	OperatorMaps.loadURLEncoding()
 	OperatorMaps.loadValidateUtf8Encoding()
 	OperatorMaps.loadVerifyCC()
 	OperatorMaps.loadVerifyCPF()
