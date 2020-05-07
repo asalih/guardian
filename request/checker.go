@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/asalih/guardian/matches"
-
 	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/models"
 	"github.com/asalih/guardian/waf/engine"
@@ -23,13 +21,12 @@ type Checker struct {
 	Transaction    *engine.Transaction
 
 	ruleExecutionResult *models.RuleExecutionResult
-	firewallResult      chan *matches.FirewallMatchResult
 	startTime           time.Time
 }
 
 /*NewRequestChecker Request checker initializer*/
 func NewRequestChecker(w http.ResponseWriter, r *http.Request, target *models.Target) *Checker {
-	return &Checker{w, target, engine.NewTransaction(r), nil, nil, time.Now()}
+	return &Checker{w, target, engine.NewTransaction(r), nil, time.Now()}
 }
 
 /*Handle Request checker handler func*/

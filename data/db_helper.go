@@ -30,9 +30,9 @@ func (h *DBHelper) GetTarget(domain string) *models.Target {
 	if target == nil {
 		if strings.HasPrefix(domain, "www.") {
 			return h.getTarget(strings.ReplaceAll(domain, "www.", ""))
-		} else {
-			return h.getTarget("www." + domain)
 		}
+
+		return h.getTarget("www." + domain)
 	}
 
 	return target

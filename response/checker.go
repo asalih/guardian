@@ -9,8 +9,6 @@ import (
 	"github.com/asalih/guardian/waf/bodyprocessor"
 	"github.com/asalih/guardian/waf/engine"
 
-	"github.com/asalih/guardian/matches"
-
 	"github.com/asalih/guardian/data"
 	"github.com/asalih/guardian/models"
 )
@@ -21,9 +19,8 @@ type Checker struct {
 	Transaction    *engine.Transaction
 	Target         *models.Target
 
-	result         *models.RuleExecutionResult
-	firewallResult chan *matches.FirewallMatchResult
-	startTime      time.Time
+	result    *models.RuleExecutionResult
+	startTime time.Time
 }
 
 /*NewResponseChecker Request checker initializer*/
@@ -31,7 +28,7 @@ func NewResponseChecker(w http.ResponseWriter, t *engine.Transaction, resp *http
 	t.Response = resp
 	t.ResponseBodyProcessor = bodyprocessor.NewResponseBodyProcessor(resp)
 
-	return &Checker{w, t, target, nil, nil, time.Now()}
+	return &Checker{w, t, target, nil, time.Now()}
 }
 
 /*Handle Request checker handler func*/

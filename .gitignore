@@ -16,3 +16,4 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+__debug_bin
