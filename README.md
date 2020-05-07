@@ -15,3 +15,8 @@ Guardian locates in front of your web server and if incoming traffic valid then 
 
 ## Guardian Dashboard
 [Guardian Dashboard](https://github.com/asalih/GuardianUI) To managing your rules and domains.
+
+## TODO
+-   General improvements & better testing
+-   Add Dockerfile
+-   Usecase
