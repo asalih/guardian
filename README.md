@@ -1,5 +1,9 @@
 # Guardian Web Application Firewall
+[![CircleCI](https://circleci.com/gh/asalih/guardian.svg?style=shield)](https://circleci.com/gh/asalih/guardian)
+[![Go Report Card](https://goreportcard.com/badge/github.com/asalih/guardian)](https://goreportcard.com/report/github.com/asalih/guardian)
+
 Guardian is the open source web application firewall based on ModSecurity SecRules format. 
+. 
 
 # How it works!
 Guardian locates in front of your web server and if incoming traffic valid then the Guardian passes it to the target server.
