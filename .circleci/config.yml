@@ -29,22 +29,22 @@ jobs:
           command: make
       - run:
           name: Service Stop
-          command: ssh -o "StrictHostKeyChecking no" root@165.22.16.87 systemctl stop guardian.service
+          command: ssh -o "StrictHostKeyChecking no" root@10.135.203.191 systemctl stop guardian.service
       - run:
           name: Deploy
-          command: scp -o StrictHostKeyChecking=no -r workdir/* root@165.22.16.87://applications/guardian/
+          command: scp -o StrictHostKeyChecking=no -r workdir/* root@10.135.203.191://applications/guardian/
       - run:
           name: Copy json files
-          command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/*.json root@165.22.16.87://applications/guardian/
+          command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/*.json root@10.135.203.191://applications/guardian/
       - run:
           name: Copy crs files
-          command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/crs/*.conf root@165.22.16.87://applications/guardian/crs/
+          command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/crs/*.conf root@10.135.203.191://applications/guardian/crs/
       - run:
           name: Copy crs-data files
-          command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/crs/*.data root@165.22.16.87://applications/guardian/crs/
+          command: scp -o StrictHostKeyChecking=no -r /go/src/github.com/asalih/guardian/crs/*.data root@10.135.203.191://applications/guardian/crs/
       - run:
           name: Deploy Cleanup
-          command: ssh root@165.22.16.87 /applications/guardian_deploy_cleanup.sh
+          command: ssh root@10.135.203.191 /applications/guardian_deploy_cleanup.sh
       - run:
           name: Service Start
-          command: ssh -o "StrictHostKeyChecking no" root@165.22.16.87 systemctl start guardian.service
+          command: ssh -o "StrictHostKeyChecking no" root@10.135.203.191 systemctl start guardian.service
