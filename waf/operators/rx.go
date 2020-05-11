@@ -6,8 +6,8 @@ import (
 	"github.com/asalih/guardian/helpers"
 )
 
-func (opMap *OperatorMap) loadRx() {
-	opMap.funcMap["rx"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["rx"] = func(expression interface{}, variableData interface{}) bool {
 
 		switch variableData.(type) {
 		case string:

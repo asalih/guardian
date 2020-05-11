@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (opMap *OperatorMap) loadIPMatchFromFile() {
+func init() {
 	fn := func(expression interface{}, variableData interface{}) bool {
 
 		remoteAddressIP := net.ParseIP(variableData.(string))
@@ -41,6 +41,6 @@ func (opMap *OperatorMap) loadIPMatchFromFile() {
 		return false
 	}
 
-	opMap.funcMap["ipMatchF"] = fn
-	opMap.funcMap["ipMatchFromFile"] = fn
+	OperatorMaps.funcMap["ipMatchF"] = fn
+	OperatorMaps.funcMap["ipMatchFromFile"] = fn
 }

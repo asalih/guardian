@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-func (opMap *OperatorMap) loadValidateByteRange() {
-	opMap.funcMap["validateByteRange"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["validateByteRange"] = func(expression interface{}, variableData interface{}) bool {
 
 		rangeMap := getRange(expression.(string))
 		data := []byte(variableData.(string))

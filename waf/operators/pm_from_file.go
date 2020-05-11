@@ -1,6 +1,6 @@
 package operators
 
-func (opMap *OperatorMap) loadPmFromFile() {
+func init() {
 	fn := func(expression interface{}, variableData interface{}) bool {
 
 		fileCache := DataFileCaches[expression.(string)]
@@ -18,6 +18,6 @@ func (opMap *OperatorMap) loadPmFromFile() {
 		return false
 	}
 
-	opMap.funcMap["pmf"] = fn
-	opMap.funcMap["pmFromFile"] = fn
+	OperatorMaps.funcMap["pmf"] = fn
+	OperatorMaps.funcMap["pmFromFile"] = fn
 }

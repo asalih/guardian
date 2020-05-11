@@ -6,8 +6,8 @@ import (
 	"github.com/asalih/guardian/helpers"
 )
 
-func (opMap *OperatorMap) loadPm() {
-	opMap.funcMap["pm"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["pm"] = func(expression interface{}, variableData interface{}) bool {
 
 		keywords := strings.Split(expression.(string), " ")
 		m := helpers.NewStringMatcher(keywords)

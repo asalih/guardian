@@ -4,8 +4,8 @@ import (
 	"strconv"
 )
 
-func (opMap *OperatorMap) loadEq() {
-	opMap.funcMap["eq"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["eq"] = func(expression interface{}, variableData interface{}) bool {
 
 		expInt, errExpr := strconv.Atoi(expression.(string))
 		varInt := 0

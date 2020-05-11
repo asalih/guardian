@@ -4,8 +4,8 @@ import (
 	"strconv"
 )
 
-func (opMap *OperatorMap) loadLt() {
-	opMap.funcMap["lt"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["lt"] = func(expression interface{}, variableData interface{}) bool {
 
 		expInt, errExpr := strconv.Atoi(expression.(string))
 		varInt := 0

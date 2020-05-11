@@ -15,8 +15,8 @@ var UnicodeErrorRestrictedCharacter int = -4
 //UnicodeErrorDecodingError ...
 var UnicodeErrorDecodingError int = -5
 
-func (opMap *OperatorMap) loadValidateUtf8Encoding() {
-	opMap.funcMap["validateUtf8Encoding"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["validateUtf8Encoding"] = func(expression interface{}, variableData interface{}) bool {
 		data := variableData.(string)
 
 		i := 0

@@ -1,7 +1,7 @@
 package operators
 
-func (opMap *OperatorMap) loadURLEncoding() {
-	opMap.funcMap["validateUrlEncoding"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["validateUrlEncoding"] = func(expression interface{}, variableData interface{}) bool {
 
 		data := variableData.(string)
 

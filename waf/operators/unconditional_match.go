@@ -1,7 +1,7 @@
 package operators
 
-func (opMap *OperatorMap) loadUnconditionalMatch() {
-	opMap.funcMap["unconditionalMatch"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["unconditionalMatch"] = func(expression interface{}, variableData interface{}) bool {
 		return true
 	}
 }

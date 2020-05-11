@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-func (opMap *OperatorMap) loadIPMatch() {
-	opMap.funcMap["ipMatch"] = func(expression interface{}, variableData interface{}) bool {
+func init() {
+	OperatorMaps.funcMap["ipMatch"] = func(expression interface{}, variableData interface{}) bool {
 
 		ipAddresses := strings.Split(expression.(string), ",")
 		remoteAddressIP := net.ParseIP(variableData.(string))
