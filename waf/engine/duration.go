@@ -7,14 +7,12 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadDuration() *TransactionMap {
-	t.variableMap["DURATION"] =
+func init() {
+	TransactionMaps.variableMap["DURATION"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			duration := helpers.CalcTime(executer.transaction.duration, time.Now())
 
 			return executer.rule.ExecuteRule(duration)
 		}}
-
-	return t
 }

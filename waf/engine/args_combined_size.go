@@ -4,8 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
-	t.variableMap["ARGS_COMBINED_SIZE"] =
+func init() {
+	TransactionMaps.variableMap["ARGS_COMBINED_SIZE"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			sizeOfParams := 0
 
@@ -30,6 +30,4 @@ func (t *TransactionMap) loadArgsCombinedSize() *TransactionMap {
 
 			return executer.rule.ExecuteRule(sizeOfParams)
 		}}
-
-	return t
 }

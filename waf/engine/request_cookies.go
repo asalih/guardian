@@ -4,9 +4,9 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadRequestCookies() *TransactionMap {
+func init() {
 
-	t.variableMap["REQUEST_COOKIES"] =
+	TransactionMaps.variableMap["REQUEST_COOKIES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
 			httpData := executer.transaction.Request.Cookies()
@@ -39,6 +39,4 @@ func (t *TransactionMap) loadRequestCookies() *TransactionMap {
 
 			return matchResult
 		}}
-
-	return t
 }

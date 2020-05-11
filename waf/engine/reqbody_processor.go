@@ -5,8 +5,8 @@ import (
 	"github.com/asalih/guardian/waf/bodyprocessor"
 )
 
-func (t *TransactionMap) loadReqBodyProcessor() *TransactionMap {
-	t.variableMap["REQBODY_PROCESSOR"] =
+func init() {
+	TransactionMaps.variableMap["REQBODY_PROCESSOR"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			var body string
 
@@ -27,6 +27,4 @@ func (t *TransactionMap) loadReqBodyProcessor() *TransactionMap {
 
 			return executer.rule.ExecuteRule(body)
 		}}
-
-	return t
 }

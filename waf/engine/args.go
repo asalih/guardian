@@ -4,8 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadArgs() *TransactionMap {
-	t.variableMap["ARGS"] =
+func init() {
+	TransactionMaps.variableMap["ARGS"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, true, true)
@@ -13,7 +13,7 @@ func (t *TransactionMap) loadArgs() *TransactionMap {
 			return argsHandler(executer, true, true)
 		}}
 
-	t.variableMap["ARGS_GET"] =
+	TransactionMaps.variableMap["ARGS_GET"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, true, false)
@@ -21,15 +21,13 @@ func (t *TransactionMap) loadArgs() *TransactionMap {
 			return argsHandler(executer, true, false)
 		}}
 
-	t.variableMap["ARGS_POST"] =
+	TransactionMaps.variableMap["ARGS_POST"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			if executer.variable.LengthCheckForCollection {
 				return argsLengthHandler(executer, false, true)
 			}
 			return argsHandler(executer, false, true)
 		}}
-
-	return t
 }
 
 func argsHandler(executer *TransactionExecuterModel, executeGet bool, executePost bool) *matches.MatchResult {

@@ -5,8 +5,9 @@ import (
 	"github.com/asalih/guardian/waf/bodyprocessor"
 )
 
-func (t *TransactionMap) loadFilesCombinedSize() *TransactionMap {
-	t.variableMap["FILES_COMBINED_SIZE"] =
+func init() {
+	//TODO might add mime type
+	TransactionMaps.variableMap["FILES_COMBINED_SIZE"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
 
@@ -26,6 +27,4 @@ func (t *TransactionMap) loadFilesCombinedSize() *TransactionMap {
 			return matchResult.SetMatch(false)
 
 		}}
-
-	return t
 }

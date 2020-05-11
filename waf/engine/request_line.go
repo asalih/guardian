@@ -4,8 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadRequestLine() *TransactionMap {
-	t.variableMap["REQUEST_LINE"] =
+func init() {
+	TransactionMaps.variableMap["REQUEST_LINE"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			uri := executer.transaction.Request.Host
@@ -23,6 +23,4 @@ func (t *TransactionMap) loadRequestLine() *TransactionMap {
 			line := executer.transaction.Request.Method + " " + uri
 			return executer.rule.ExecuteRule(line)
 		}}
-
-	return t
 }

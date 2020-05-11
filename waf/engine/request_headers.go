@@ -6,8 +6,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadRequestHeaders() *TransactionMap {
-	t.variableMap["REQUEST_HEADERS"] =
+func init() {
+	TransactionMaps.variableMap["REQUEST_HEADERS"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
 			httpData := executer.transaction.Request.Header
@@ -38,6 +38,4 @@ func (t *TransactionMap) loadRequestHeaders() *TransactionMap {
 
 			return matchResult
 		}}
-
-	return t
 }

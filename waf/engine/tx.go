@@ -4,8 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadTX() *TransactionMap {
-	t.variableMap["TX"] =
+func init() {
+	TransactionMaps.variableMap["TX"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			matchResult := matches.NewMatchResult()
@@ -37,6 +37,4 @@ func (t *TransactionMap) loadTX() *TransactionMap {
 
 			return matchResult
 		}}
-
-	return t
 }

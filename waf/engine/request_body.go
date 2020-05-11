@@ -4,8 +4,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadRequestBody() *TransactionMap {
-	t.variableMap["REQUEST_BODY"] =
+func init() {
+	TransactionMaps.variableMap["REQUEST_BODY"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			bodyBuffer := executer.transaction.RequestBodyProcessor.GetBodyBuffer()
 
@@ -15,6 +15,4 @@ func (t *TransactionMap) loadRequestBody() *TransactionMap {
 
 			return executer.rule.ExecuteRule(string(bodyBuffer))
 		}}
-
-	return t
 }

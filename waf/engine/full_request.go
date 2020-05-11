@@ -7,22 +7,20 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadFullRequestAndLength() *TransactionMap {
-	t.variableMap["FULL_REQUEST"] =
+func init() {
+	TransactionMaps.variableMap["FULL_REQUEST"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			httpData := formatRequest(executer.transaction)
 
 			return executer.rule.ExecuteRule(httpData)
 		}}
 
-	t.variableMap["FULL_REQUEST_LENGTH"] =
+	TransactionMaps.variableMap["FULL_REQUEST_LENGTH"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			httpData := len(formatRequest(executer.transaction))
 
 			return executer.rule.ExecuteRule(httpData)
 		}}
-
-	return t
 }
 
 // formatRequest generates ascii representation of a request

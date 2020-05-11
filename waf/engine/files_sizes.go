@@ -5,8 +5,8 @@ import (
 	"github.com/asalih/guardian/waf/bodyprocessor"
 )
 
-func (t *TransactionMap) loadFilesSizes() *TransactionMap {
-	t.variableMap["FILES_SIZES"] =
+func init() {
+	TransactionMaps.variableMap["FILES_SIZES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
 
@@ -29,6 +29,4 @@ func (t *TransactionMap) loadFilesSizes() *TransactionMap {
 
 			return matchResult.SetMatch(false)
 		}}
-
-	return t
 }

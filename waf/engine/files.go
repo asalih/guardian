@@ -5,8 +5,8 @@ import (
 	"github.com/asalih/guardian/waf/bodyprocessor"
 )
 
-func (t *TransactionMap) loadFiles() *TransactionMap {
-	t.variableMap["FILES"] =
+func init() {
+	TransactionMaps.variableMap["FILES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			matchResult := matches.NewMatchResult()
 
@@ -31,6 +31,4 @@ func (t *TransactionMap) loadFiles() *TransactionMap {
 
 			return matchResult.SetMatch(false)
 		}}
-
-	return t
 }

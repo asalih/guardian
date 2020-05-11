@@ -4,12 +4,10 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadGeo() *TransactionMap {
-	t.variableMap["GEO"] =
+func init() {
+	TransactionMaps.variableMap["GEO"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			//TODO Not implemented yet
 			return matches.NewMatchResult()
 		}}
-
-	return t
 }

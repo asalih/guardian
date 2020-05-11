@@ -6,8 +6,8 @@ import (
 	"github.com/asalih/guardian/waf/bodyprocessor"
 )
 
-func (t *TransactionMap) loadXML() *TransactionMap {
-	t.variableMap["XML"] =
+func init() {
+	TransactionMaps.variableMap["XML"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			switch executer.transaction.RequestBodyProcessor.(type) {
@@ -37,6 +37,4 @@ func (t *TransactionMap) loadXML() *TransactionMap {
 			return matches.NewMatchResult()
 
 		}}
-
-	return t
 }

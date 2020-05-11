@@ -5,7 +5,7 @@ import (
 	"github.com/asalih/guardian/waf/bodyprocessor"
 )
 
-func (t *TransactionMap) loadFilesNames() *TransactionMap {
+func init() {
 	transData := &TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 		matchResult := matches.NewMatchResult()
 
@@ -29,8 +29,7 @@ func (t *TransactionMap) loadFilesNames() *TransactionMap {
 		return matchResult.SetMatch(false)
 	}}
 
-	t.variableMap["FILES_NAMES"] = transData
-	t.variableMap["MULTIPART_FILENAME"] = transData
+	TransactionMaps.variableMap["FILES_NAMES"] = transData
+	TransactionMaps.variableMap["MULTIPART_FILENAME"] = transData
 
-	return t
 }

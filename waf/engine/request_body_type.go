@@ -6,8 +6,8 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadRequestBodyType() *TransactionMap {
-	t.variableMap["REQUEST_BODY_TYPE"] =
+func inşt() {
+	TransactionMaps.variableMap["REQUEST_BODY_TYPE"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			contentType := executer.transaction.Request.Header.Get("Content-Type")
 			mediaType, _, _ := mime.ParseMediaType(contentType)
@@ -15,7 +15,7 @@ func (t *TransactionMap) loadRequestBodyType() *TransactionMap {
 			return executer.rule.ExecuteRule(mediaType)
 		}}
 
-	t.variableMap["MULTIPART_BOUNDARY"] =
+	TransactionMaps.variableMap["MULTIPART_BOUNDARY"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 			contentType := executer.transaction.Request.Header.Get("Content-Type")
 			_, mediaParams, _ := mime.ParseMediaType(contentType)
@@ -23,7 +23,7 @@ func (t *TransactionMap) loadRequestBodyType() *TransactionMap {
 			return executer.rule.ExecuteRule(mediaParams["boundary"])
 		}}
 
-	t.variableMap["MULTIPART_ERROR"] =
+	TransactionMaps.variableMap["MULTIPART_ERROR"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			contentType := executer.transaction.Request.Header.Get("Content-Type")
@@ -36,6 +36,4 @@ func (t *TransactionMap) loadRequestBodyType() *TransactionMap {
 
 			return executer.rule.ExecuteRule(multiPartError)
 		}}
-
-	return t
 }

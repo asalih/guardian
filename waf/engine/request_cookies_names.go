@@ -5,9 +5,9 @@ import (
 	"github.com/asalih/guardian/matches"
 )
 
-func (t *TransactionMap) loadRequestCookiesNames() *TransactionMap {
+func init() {
 
-	t.variableMap["REQUEST_COOKIES_NAMES"] =
+	TransactionMaps.variableMap["REQUEST_COOKIES_NAMES"] =
 		&TransactionData{func(executer *TransactionExecuterModel) *matches.MatchResult {
 
 			httpData := helpers.GetCookiesNames(executer.transaction.Request.Cookies())
@@ -40,6 +40,4 @@ func (t *TransactionMap) loadRequestCookiesNames() *TransactionMap {
 
 			return matchResult
 		}}
-
-	return t
 }
