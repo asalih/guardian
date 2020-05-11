@@ -1,7 +1,7 @@
 package transformations
 
-func (transform *TransformationMap) loadParityEven7bit() {
-	transform.funcMap["parityEven7bit"] = func(variableData interface{}) interface{} {
+func init() {
+	TransformationMaps.funcMap["parityEven7bit"] = func(variableData interface{}) interface{} {
 
 		input := []byte(variableData.(string))
 		inputLen := len(input)

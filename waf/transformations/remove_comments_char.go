@@ -4,8 +4,8 @@ import (
 	"strings"
 )
 
-func (transform *TransformationMap) loadRemoveCommentsChar() {
-	transform.funcMap["removeCommentsChar"] = func(variableData interface{}) interface{} {
+func init() {
+	TransformationMaps.funcMap["removeCommentsChar"] = func(variableData interface{}) interface{} {
 		str := variableData.(string)
 		replacer := strings.NewReplacer("/*", "", "*/", "", "--", "", "#", "")
 

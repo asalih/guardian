@@ -4,8 +4,8 @@ import (
 	"net/url"
 )
 
-func (transform *TransformationMap) loadURLDecode() {
-	transform.funcMap["urlDecode"] = func(variableData interface{}) interface{} {
+func init() {
+	TransformationMaps.funcMap["urlDecode"] = func(variableData interface{}) interface{} {
 
 		result, _ := url.QueryUnescape(variableData.(string))
 

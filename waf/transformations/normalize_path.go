@@ -1,11 +1,11 @@
 package transformations
 
-func (transform *TransformationMap) loadNormalizePath() {
+func init() {
 	fn := func(variableData interface{}) interface{} {
 		//TODO Not implemented
 		return variableData.(string)
 	}
 
-	transform.funcMap["normalizePath"] = fn
-	transform.funcMap["normalisePath"] = fn
+	TransformationMaps.funcMap["normalizePath"] = fn
+	TransformationMaps.funcMap["normalisePath"] = fn
 }

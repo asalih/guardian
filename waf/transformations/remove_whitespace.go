@@ -5,8 +5,8 @@ import (
 	"unicode"
 )
 
-func (transform *TransformationMap) loadRemoveWhitespace() {
-	transform.funcMap["removeWhitespace"] = func(variableData interface{}) interface{} {
+func init() {
+	TransformationMaps.funcMap["removeWhitespace"] = func(variableData interface{}) interface{} {
 
 		str := variableData.(string)
 		var b strings.Builder

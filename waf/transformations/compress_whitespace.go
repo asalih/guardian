@@ -5,8 +5,8 @@ import (
 	"unicode"
 )
 
-func (transform *TransformationMap) loadCompressWhitespace() {
-	transform.funcMap["compressWhitespace"] = func(variableData interface{}) interface{} {
+func init() {
+	TransformationMaps.funcMap["compressWhitespace"] = func(variableData interface{}) interface{} {
 
 		str := variableData.(string)
 		var b strings.Builder

@@ -2,8 +2,8 @@ package transformations
 
 import "encoding/hex"
 
-func (transform *TransformationMap) loadHexEncode() {
-	transform.funcMap["hexEncode"] = func(variableData interface{}) interface{} {
+func init() {
+	TransformationMaps.funcMap["hexEncode"] = func(variableData interface{}) interface{} {
 		switch v := variableData.(type) {
 		case string:
 			return hex.EncodeToString([]byte(v))

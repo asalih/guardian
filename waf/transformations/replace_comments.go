@@ -6,8 +6,8 @@ import (
 
 var re = regexp.MustCompile("(?s)//.*?\n|/\\*.*?\\*/")
 
-func (transform *TransformationMap) loadReplaceComments() {
-	transform.funcMap["replaceComments"] = func(variableData interface{}) interface{} {
+func init() {
+	TransformationMaps.funcMap["replaceComments"] = func(variableData interface{}) interface{} {
 
 		str := variableData.(string)
 		return re.ReplaceAllString(str, " ")
