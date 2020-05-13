@@ -4,10 +4,12 @@ services:
         image: postgres
         restart: always
         ports: 
-            5432:5432
+            - "5432:5432"
         environment: 
             POSTGRES_USER: guardian
             POSTGRES_DB: guardiandb
             POSTGRES_PASSWORD: 7eb12540045a4bc0b474a7efb91ebd39
     guardian:
         build: ./docker/guardian
+        depends_on:
+            - "db"
