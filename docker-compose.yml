@@ -1,0 +1,9 @@
+version: "3"
+services:
+    db:
+        image: postgres
+        restart: always
+        environment: 
+            POSTGRES_USER: guardian
+            POSTGRES_DB: guardiandb
+            POSTGRES_PASSWORD: hm3B5s6'#-tS
