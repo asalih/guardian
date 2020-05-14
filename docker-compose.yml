@@ -17,3 +17,10 @@ services:
         ports:
             - "80:80"
             - "443:443"
+    guardian_dashboard:
+        depends_on:
+            - db
+        build: ./docker/dashboard
+        restart: always
+        ports:
+            - "8080:5000"
