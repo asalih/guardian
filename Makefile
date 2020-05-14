@@ -15,7 +15,3 @@ build-native: $(GOFILES)
 
 workdir/guardian: $(GOFILES)
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o workdir/guardian .
-
-workdir/guardian/crs/%.conf: src/%.conf
-	@[ -d crs ] || mkdir crs
-	cp $< $@
