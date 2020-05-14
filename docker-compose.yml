@@ -11,7 +11,7 @@ services:
             POSTGRES_PASSWORD: 7eb12540045a4bc0b474a7efb91ebd39
     guardian:
         build: ./docker/guardian
-        posts:
+        ports:
             - "80:80"
             - "443:443"
         depends_on:
