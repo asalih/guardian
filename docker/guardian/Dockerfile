@@ -11,6 +11,6 @@ RUN sed -i 's,POSTGRES_HOST,localhost,g' appsettings.live.json
 RUN sed -i 's,POSTGRES_USER,guardian,g' appsettings.live.json
 RUN sed -i 's,POSTGRES_DB,guardiandb,g' appsettings.live.json
 
-CMD ["./guardian"]
+CMD ["./workdir/guardian/guardian"]
 
 EXPOSE 80 443
