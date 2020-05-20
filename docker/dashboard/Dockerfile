@@ -8,6 +8,7 @@ RUN git clone https://github.com/asalih/GuardianUI
 WORKDIR ./GuardianUI
 
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_URLS=http://*:5000
 
 RUN dotnet publish -c Release -o app
 WORKDIR ./app
