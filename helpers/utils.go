@@ -91,3 +91,27 @@ func StringContains(slice []string, item string) bool {
 	_, ok := set[item]
 	return ok
 }
+
+// IsHex reports whether the given character is a hex digit.
+func IsHex(c byte) bool {
+	return '0' <= c && c <= '9' || 'a' <= c && c <= 'f' || 'A' <= c && c <= 'F'
+}
+
+// HexDecode decodes a short hex digit sequence: "10" -> 16.
+func HexDecode(s []byte) rune {
+	n := '\x00'
+	for _, c := range s {
+		n <<= 4
+		switch {
+		case '0' <= c && c <= '9':
+			n |= rune(c - '0')
+		case 'a' <= c && c <= 'f':
+			n |= rune(c-'a') + 10
+		case 'A' <= c && c <= 'F':
+			n |= rune(c-'A') + 10
+		default:
+			panic(fmt.Sprintf("Bad hex digit in %q", s))
+		}
+	}
+	return n
+}

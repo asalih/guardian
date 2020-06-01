@@ -15,7 +15,15 @@ Guardian locates in front of your web server and if incoming traffic valid then 
 ## Guardian Dashboard
 [Guardian Dashboard](https://github.com/asalih/GuardianUI) To managing your rules and domains.
 
+## Docker
+There is [docker-compose.yml](docker-compose.yml) available. Builds the following app using Dockerfiles.
+-   db
+    - Runs postgres image with default settings and guardiandb created in it.
+-   guardian
+    - Runs golang image then builds the waf from master branch. Listens 80 and 443 ports.
+-   guardian_dashboard
+    - Runs mcr.microsoft.com/dotnet/core/sdk:3.0 image then builds the dashboard app from master branch. Listens 8080 port.
+
 ## TODO
 -   General improvements & better testing
--   Add Dockerfile
 -   Usecase
