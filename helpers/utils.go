@@ -92,26 +92,53 @@ func StringContains(slice []string, item string) bool {
 	return ok
 }
 
-// IsHex reports whether the given character is a hex digit.
-func IsHex(c byte) bool {
-	return '0' <= c && c <= '9' || 'a' <= c && c <= 'f' || 'A' <= c && c <= 'F'
+//X2c Combines two hex chars into a single byte
+func X2c(c1 byte, c2 byte) byte {
+	var char byte
+	if c1 >= 'A' {
+		char = ((c1 & 0xdf) - 'A') + 10
+	} else {
+		char = c1 - '0'
+	}
+	char *= 16
+	if c2 >= 'A' {
+		char += ((c2 & 0xdf) - 'A') + 10
+	} else {
+		char += c2 - '0'
+	}
+	return char
 }
 
-// HexDecode decodes a short hex digit sequence: "10" -> 16.
-func HexDecode(s []byte) rune {
-	n := '\x00'
-	for _, c := range s {
-		n <<= 4
-		switch {
-		case '0' <= c && c <= '9':
-			n |= rune(c - '0')
-		case 'a' <= c && c <= 'f':
-			n |= rune(c-'a') + 10
-		case 'A' <= c && c <= 'F':
-			n |= rune(c-'A') + 10
-		default:
-			panic(fmt.Sprintf("Bad hex digit in %q", s))
-		}
+//XSingle2c Converts a hex char into a byte
+func XSingle2c(c byte) byte {
+	if c >= 'A' {
+		return ((c & 0xdf) - 'A') + 10
 	}
-	return n
+
+	return c - '0'
+}
+
+//ValidHex ...
+func ValidHex(X byte) bool {
+	return ((X >= '0') && (X <= '9')) || ((X >= 'a') && (X <= 'f')) || ((X >= 'A') && (X <= 'F'))
+}
+
+//IsDigit Determines given byte is digit
+func IsDigit(X byte) bool {
+	return (X >= '0') && (X <= '9')
+}
+
+//IsODidit checks if the byte is a octo decimal digit
+func IsODidit(X byte) bool {
+	return (X >= '0') && (X <= '7')
+}
+
+/*IsSpace checks for white-space  characters.   In  the  "C"  and  "POSIX"
+locales,  these  are:  space,  form-feed ('\f'), newline ('\n'),
+carriage return ('\r'), horizontal tab ('\t'), and vertical  tab
+('\v'). */
+func IsSpace(X byte) bool {
+	return X == ' ' || X == '\n' ||
+		X == '\r' || X == '\t' ||
+		X == '\f' || X == '\v'
 }

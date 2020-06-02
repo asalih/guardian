@@ -16,7 +16,7 @@ Guardian locates in front of your web server and if incoming traffic valid then 
 [Guardian Dashboard](https://github.com/asalih/GuardianUI) To managing your rules and domains.
 
 ## Docker
-There is [docker-compose.yml](docker-compose.yml) available. Builds the following app using Dockerfiles.
+There is [docker-compose.yml](docker-compose.yml) available. Builds the following apps using Dockerfiles.
 -   db
     - Runs postgres image with default settings and guardiandb created in it.
 -   guardian
