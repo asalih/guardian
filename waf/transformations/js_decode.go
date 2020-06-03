@@ -4,7 +4,6 @@ import "github.com/asalih/guardian/helpers"
 
 func init() {
 	TransformationMaps.funcMap["jsDecode"] = func(variableData interface{}) interface{} {
-		//Not implemented
 		return jsDecode(variableData.(string))
 	}
 }

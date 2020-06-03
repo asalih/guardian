@@ -10,6 +10,7 @@ func init() {
 		if err != nil {
 			return nil
 		}
+
 		return str
 	}
 }
