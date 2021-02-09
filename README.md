@@ -1,3 +1,6 @@
+# DEPRECATED
+This repository started as a good idea but I didn't have enough time or desire to work on it. So, it's left here for historical / educational purposes, but be advised it's essentially dead code. If anyone else wants to fork and develop / maintain it, be my guest :)
+
 # Guardian Web Application Firewall
 [![CircleCI](https://circleci.com/gh/asalih/guardian.svg?style=shield)](https://circleci.com/gh/asalih/guardian)
 [![Go Report Card](https://goreportcard.com/badge/github.com/asalih/guardian)](https://goreportcard.com/report/github.com/asalih/guardian)
